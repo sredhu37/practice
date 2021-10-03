@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-master
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-master
+  serviceName: {{ .Release.Name }}-master
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-master
+    spec:
+      terminationGracePeriodSeconds: 10
+      initContainers:
+      - name: permissionsfix
+        image: alpine:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - chown 1000:1000 /var/jenkins_home;
+        volumeMounts:
+        - name: {{ .Release.Name }}-home
+          mountPath: /var/jenkins_home
+      containers:
+      - name: {{ .Release.Name }}-master
+        image: {{ .Values.jenkins.image.repository }}:{{ .Values.jenkins.image.tag }}
+        imagePullPolicy: {{ .Values.jenkins.image.pullPolicy }}
+        ports:
+        - containerPort: 8080
+          name: master
+        - containerPort: 50000
+          name: agent
+        volumeMounts:
+        - name: {{ .Release.Name }}-home
+          mountPath: /var/jenkins_home
+      volumes:
+      - persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-home
+        name: {{ .Release.Name }}-home
