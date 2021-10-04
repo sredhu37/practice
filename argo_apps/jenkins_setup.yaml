@@ -8,7 +8,7 @@ spec:
     namespace: argocd
     server: 'https://kubernetes.default.svc'
   source:
-    path: argo_apps
+    path: jenkins/sunny-jenkins-helm/
     repoURL: 'https://github.com/sredhu37/practice.git'
     targetRevision: setup-argocd
   project: default

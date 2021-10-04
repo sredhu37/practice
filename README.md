@@ -4,11 +4,15 @@
 
 ### Create namespaces:
 
-`kubectl apply -f cluster-setup/namespaces.yaml`
+`kubectl apply -f manual-setup/namespaces.yaml`
 
 ### Install argocd
 
-`kubectl apply -n argocd -f cluster-setup/manual_init/argocd_server.yaml`
+`kubectl apply -n argocd -f manual_setup/argocd_server.yaml`
+
+### Install app-of-apps
+
+`kubectl apply -f manual_setup/argocd_app.yaml`
 
 ### Make argocd accessible:
 
