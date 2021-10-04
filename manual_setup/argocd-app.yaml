@@ -10,7 +10,7 @@ spec:
   source:
     path: argo_apps/docker-desktop/
     repoURL: 'https://github.com/sredhu37/practice.git'
-    targetRevision: setup-argocd
+    targetRevision: master
   project: default
   syncPolicy:
     automated:
