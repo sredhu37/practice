@@ -2820,6 +2820,9 @@ metadata:
     app.kubernetes.io/name: argocd-cm
     app.kubernetes.io/part-of: argocd
   name: argocd-cm
+  namespace: argocd
+data:
+  accounts.sunny: apiKey, login
 ---
 apiVersion: v1
 kind: ConfigMap
