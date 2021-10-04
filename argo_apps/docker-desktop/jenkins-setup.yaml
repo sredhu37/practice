@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sunny-jenkins
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: argocd
+    server: 'https://kubernetes.default.svc'
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+  source:
+    path: jenkins/sunny-jenkins-helm/
+    repoURL: 'https://github.com/sredhu37/practice.git'
+    targetRevision: setup-argocd
+    helm:
+      valueFiles:
+      - values-dev.yaml
+      values: |
+        persitentVolumeClaim:
+          storage: 10G

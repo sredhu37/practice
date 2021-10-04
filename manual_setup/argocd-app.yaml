@@ -1,16 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: jenkins-setup
+  name: app-of-apps
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
     namespace: argocd
     server: 'https://kubernetes.default.svc'
   source:
-    path: jenkins/sunny-jenkins-helm/
+    path: argo_apps/docker-desktop/
     repoURL: 'https://github.com/sredhu37/practice.git'
     targetRevision: setup-argocd
   project: default

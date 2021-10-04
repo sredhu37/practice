@@ -8,11 +8,11 @@
 
 ### Install argocd
 
-`kubectl apply -n argocd -f manual_setup/argocd_server.yaml`
+`kubectl apply -n argocd -f manual_setup/argocd-server.yaml`
 
 ### Install app-of-apps
 
-`kubectl apply -f manual_setup/argocd_app.yaml`
+`kubectl apply -f manual_setup/argocd-app.yaml`
 
 ### Make argocd accessible:
 
