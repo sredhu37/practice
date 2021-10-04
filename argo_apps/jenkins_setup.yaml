@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cluster_setup
+  name: jenkins_setup
   namespace: argocd
 spec:
   destination:
