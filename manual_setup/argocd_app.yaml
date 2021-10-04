@@ -1,15 +1,16 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: my-apps
+  name: app_of_apps
+  namespace: argocd
 spec:
   destination:
-    namespace: default
+    namespace: argocd
     server: 'https://kubernetes.default.svc'
   source:
-    path: argocd/argocd-apps
-    repoURL: 'https://gitlab.com/ayush-sharma/example-assets.git'
-    targetRevision: HEAD
+    path: argo_apps
+    repoURL: 'https://github.com/sredhu37/practice.git'
+    targetRevision: setup-argocd
   project: default
   syncPolicy:
     automated:
