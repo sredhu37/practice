@@ -33,10 +33,21 @@ spec:
           name: master
         - containerPort: 50000
           name: agent
+        env:
+          - name: CASC_JENKINS_CONFIG
+            value: /var/config_casc/casc.yaml
         volumeMounts:
         - name: {{ .Release.Name }}-home
           mountPath: /var/jenkins_home
+        - name: {{ .Release.Name }}-casc
+          mountPath: /var/config_casc
       volumes:
-      - persistentVolumeClaim:
+      - name: {{ .Release.Name }}-home
+        persistentVolumeClaim:
           claimName: {{ .Release.Name }}-home
-        name: {{ .Release.Name }}-home
+      - name: {{ .Release.Name }}-casc
+        configMap:
+          name: {{ .Release.Name }}-casc
+          items:
+          - key: "casc"
+            path: "casc.yaml"

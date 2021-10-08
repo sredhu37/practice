@@ -8,7 +8,7 @@ jenkins:
   image:
     repository: sunnyredhu/jenkins
     pullPolicy: IfNotPresent
-    tag: "2.309-alpine-0.0.2"
+    tag: "2.309-alpine-0.0.1"
 
 service:
   type: ClusterIP         # ClusterIP, NodePort, LoadBalancer, ExternalName
