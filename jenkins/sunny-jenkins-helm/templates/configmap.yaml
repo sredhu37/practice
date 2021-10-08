@@ -20,7 +20,7 @@ data:
           enableCaptcha: false
           users:
           - id: "admin"
-            name: "${admin_username}"
-            password: "${admin_password}"
+            name: "${ADMIN_USERNAME}"
+            password: "${ADMIN_PASSWORD}"
       remotingSecurity:
         enabled: true
