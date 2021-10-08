@@ -12,9 +12,26 @@
 
 - `kubectl apply -f manual_setup/02_sealedsecrets-controller.yaml`
 
+### Install the sealing secret
+
+- Secret is stored in my system. Can't disclose it. But deploy this secret in all the clusters in kube-system namespace.
+
+`kubectl apply -f <path_to_secret.yaml> -n kube-system`
+
+- Certificate(present in the secret) is used to encrypt the secrets and decrypt the sealedsecrets.
+
+- `kubeseal --fetch-cert` will get the certificate from the latest key. A new gets generated every month. However, I will be using the older one for now as it's being used in multiple clusters.
+
+#### Encrypt secrets to sealed-secrets:
+
+- Create the secret.yaml file.
+- Encrypt this secret using kubeseal:
+
+  `kubeseal --cert=path_to_cert_file -o yaml <secret.yaml >sealedsecret.yaml`
+
 ### Install argocd
 
-- Download argocd CLI and move to path
+- Download argocd CLI and move to path.
 
 - `kubectl apply -n argocd -f manual_setup/03_argocd-controller.yaml`
 
