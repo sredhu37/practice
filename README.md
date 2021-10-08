@@ -27,7 +27,7 @@
 - Create the secret.yaml file.
 - Encrypt this secret using kubeseal:
 
-  `kubeseal --cert=path_to_cert_file -o yaml <secret.yaml >sealedsecret.yaml`
+  `kubeseal --cert=path_to_cert_file -o yaml --scope cluster-wide <secret.yaml >sealedsecret.yaml`
 
 ### Install argocd
 
