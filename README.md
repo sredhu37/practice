@@ -4,23 +4,23 @@
 
 ### Create namespaces:
 
-`kubectl apply -f manual-setup/namespaces.yaml`
-
-### Install argocd
-
-- Download argocd CLI and move to path
-
-- `kubectl apply -n argocd -f manual_setup/argocd-controller.yaml`
+`kubectl apply -f manual-setup/01_namespaces.yaml`
 
 ### Install sealed-secrets from bitnami
 
 - Download kubeseal CLI and move to path
 
-- `kubectl apply -f manual_setup/sealedsecrets-controller.yaml`
+- `kubectl apply -f manual_setup/02_sealedsecrets-controller.yaml`
+
+### Install argocd
+
+- Download argocd CLI and move to path
+
+- `kubectl apply -n argocd -f manual_setup/03_argocd-controller.yaml`
 
 ### Install app-of-apps
 
-`kubectl apply -f manual_setup/argocd-app.yaml`
+`kubectl apply -f manual_setup/04_argocd-app.yaml`
 
 ### Make argocd accessible:
 
