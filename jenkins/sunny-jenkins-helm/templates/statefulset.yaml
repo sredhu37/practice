@@ -39,12 +39,12 @@ spec:
           - name: ADMIN_USERNAME
             valueFrom:
               secretKeyRef:
-                name: {{ .Release.Name }}-jcasc-secrets
+                name: {{ .Release.Name }}-jcasc-sealedsecrets
                 key: admin_username
           - name: ADMIN_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: {{ .Release.Name }}-jcasc-secrets
+                name: {{ .Release.Name }}-jcasc-sealedsecrets
                 key: admin_password
         volumeMounts:
         - name: {{ .Release.Name }}-home
