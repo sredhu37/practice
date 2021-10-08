@@ -8,7 +8,15 @@
 
 ### Install argocd
 
-`kubectl apply -n argocd -f manual_setup/argocd-server.yaml`
+- Download argocd CLI and move to path
+
+- `kubectl apply -n argocd -f manual_setup/argocd-controller.yaml`
+
+### Install sealed-secrets from bitnami
+
+- Download kubeseal CLI and move to path
+
+- `kubectl apply -f manual_setup/sealedsecrets-controller.yaml`
 
 ### Install app-of-apps
 

@@ -56,6 +56,13 @@ persitentVolumeClaim:
   # storageClassName: hostpath          # Docker desktop k8s cluster
   storageClassName: standard-rwo    # GKE cluster
 
+sealedSecrets:
+  jcasc:
+    data:
+      admin_username: ''
+      admin_password: ''
+    type: 'Opaque'
+
 nodeSelector: {}
 
 tolerations: []

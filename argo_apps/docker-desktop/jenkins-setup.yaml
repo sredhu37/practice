@@ -24,3 +24,9 @@ spec:
       values: |
         persitentVolumeClaim:
           storage: 10G
+        sealedSecrets:
+          jcasc:
+            data:
+              admin_username: AgAhX+3GtgPZWcK7kvA8DjfL0wAeieoAVku51rs+SoAeXfAo7lCwMRm7B6jt8W53zGbU0tfaGEvgdkDYfwrvXRFmQfVUzv7wZqwI+KJC2zcH2N+Vaa3XfJGVSsWVikpmUCuIwV0ApDSZSitSXrsw5CgdO46AKxPrjzrvDP2KqBloJ0Wr4oHbOE5RJPfpP55AdpQlBY9TB2MreBnGOH55Bkav650l+4UzHo+4X/tAHSnipOMrKWRHzho0g60pNvgmeGQkHrQeJvg/ecADdy1s6N/NJcqjuVj60okv2kCokOVvRuFPRyxXPSXUfpQ7U3XXgFkxVoHaB0arpBsjjymWPHKGm/zmUiSPS5aPgcPeM0SKWbWnvMyrDsdrghYiB2idKJqpnU5/Wu5HjFzm0Cbqo9mUXOIqvbHgcQ8e/y57DkAsRqPoILvHSLZRyDBPsDeqq0fgjT2q+UwawBU1XjGP/jelBF+Mxk3XXGFo2ZprhMfiFC9myeCGUeazgzmqzgmuIXpGE3GrVnQsLT4vJA3omZXL+TxV1UYj1cS8L9hPJXGxkTV42yL3uBV1qDwuOxa2xFj1hS+GZIX1h02Xr1WYBHTz3K9hoSzn88g5+ra8r9oBYStod6lF6oeSp7+TfC/SmkbJAzwhbwfCcd93oLTBwOOuL5Fnp0F0+6DAJmW8tZj2ggMbgffq/ah6XKoBo5zWcuHEuqKkypQ=
+              admin_password: AgAhX+3GtgPZWcK7kvA8DjfL0wAeieoAVku51rs+SoAeXfAo7lCwMRm7B6jt8W53zGbU0tfaGEvgdkDYfwrvXRFmQfVUzv7wZqwI+KJC2zcH2N+Vaa3XfJGVSsWVikpmUCuIwV0ApDSZSitSXrsw5CgdO46AKxPrjzrvDP2KqBloJ0Wr4oHbOE5RJPfpP55AdpQlBY9TB2MreBnGOH55Bkav650l+4UzHo+4X/tAHSnipOMrKWRHzho0g60pNvgmeGQkHrQeJvg/ecADdy1s6N/NJcqjuVj60okv2kCokOVvRuFPRyxXPSXUfpQ7U3XXgFkxVoHaB0arpBsjjymWPHKGm/zmUiSPS5aPgcPeM0SKWbWnvMyrDsdrghYiB2idKJqpnU5/Wu5HjFzm0Cbqo9mUXOIqvbHgcQ8e/y57DkAsRqPoILvHSLZRyDBPsDeqq0fgjT2q+UwawBU1XjGP/jelBF+Mxk3XXGFo2ZprhMfiFC9myeCGUeazgzmqzgmuIXpGE3GrVnQsLT4vJA3omZXL+TxV1UYj1cS8L9hPJXGxkTV42yL3uBV1qDwuOxa2xFj1hS+GZIX1h02Xr1WYBHTz3K9hoSzn88g5+ra8r9oBYStod6lF6oeSp7+TfC/SmkbJAzwhbwfCcd93oLTBwOOuL5Fnp0F0+6DAJmW8tZj2ggMbgffq/ah6XKoBo5zWcuHEuqKkypQ=
+            type: 'Opaque'
