@@ -17,7 +17,7 @@ spec:
   source:
     path: jenkins/sunny-jenkins-helm/
     repoURL: 'https://github.com/sredhu37/practice.git'
-    targetRevision: master
+    targetRevision: dev
     helm:
       valueFiles:
       - values-dev.yaml
