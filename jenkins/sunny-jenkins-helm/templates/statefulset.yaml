@@ -36,16 +36,6 @@ spec:
         env:
           - name: CASC_JENKINS_CONFIG
             value: /var/config_casc/casc.yaml
-          - name: ADMIN_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Release.Name }}-jcasc-sealedsecrets
-                key: admin_username
-          - name: ADMIN_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Release.Name }}-jcasc-sealedsecrets
-                key: admin_password
         volumeMounts:
         - name: {{ .Release.Name }}-home
           mountPath: /var/jenkins_home

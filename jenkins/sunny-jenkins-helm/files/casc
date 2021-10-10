@@ -9,11 +9,7 @@ jenkins:
       - "Overall/Read:authenticated"
   securityRealm:
     local:
-      allowsSignup: false
+      allowsSignup: true
       enableCaptcha: false
-      users:
-      - id: "admin"
-        name: ${ADMIN_USERNAME}
-        password: ${ADMIN_PASSWORD}
   remotingSecurity:
     enabled: true
