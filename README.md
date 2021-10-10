@@ -1,16 +1,16 @@
 # For Developers/Administrators
 
-## Docker Desktop K8S cluster setup
+## After creating GCP K8S cluster, run the following steps to do the setup
 
 ### Create namespaces:
 
-`kubectl apply -f manual-setup/01_namespaces.yaml`
+`kubectl apply -f manual_setup/01_namespaces.yaml`
 
 ### Install sealed-secrets from bitnami
 
 - Download kubeseal CLI and move to path
 
-- `kubectl apply -f manual_setup/02_sealedsecrets-controller.yaml`
+- `kubectl apply -n sealedsecrets -f manual_setup/02_sealedsecrets-controller.yaml`
 
 ### Install the sealing secret
 
@@ -95,7 +95,7 @@ Jenkins.instance.pluginManager.plugins.each{
 
 ### Prod version (On GKE)
 
-`helm install -n jenkins jenkins/sunny-jenkins-helm/.`
+`helm install -n jenkins jenkins jenkins/sunny-jenkins-helm/.`
 
 ### Check if Chart installed
 
