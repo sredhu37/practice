@@ -4,23 +4,4 @@ metadata:
   name: {{ .Release.Name }}-casc
   namespace: {{ .Release.Namespace }}
 data:
-  casc: |
-    unclassified:
-      location:
-        url: "http://127.0.0.1:8080/"
-    jenkins:
-      authorizationStrategy:
-        projectMatrix:
-          permissions:
-          - "Overall/Administer:admin"
-          - "Overall/Read:authenticated"
-      securityRealm:
-        local:
-          allowsSignup: false
-          enableCaptcha: false
-          users:
-          - id: "admin"
-            name: ${ADMIN_USERNAME}
-            password: ${ADMIN_PASSWORD}
-      remotingSecurity:
-        enabled: true
+{{ (tpl (.Files.Glob "files/casc").AsConfig . ) | indent 2 }}
