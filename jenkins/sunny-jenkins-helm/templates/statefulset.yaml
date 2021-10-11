@@ -34,13 +34,15 @@ spec:
         - containerPort: 50000
           name: agent
         env:
+          - name: JAVA_OPTS
+            value: "-Djenkins.install.runSetupWizard=false -Dcasc.reload.token=12345"     # Needs modification
           - name: CASC_JENKINS_CONFIG
-            value: /var/config_casc/casc.yaml
+            value: /var/jenkins_home/casc_config/casc.yaml
         volumeMounts:
         - name: {{ .Release.Name }}-home
           mountPath: /var/jenkins_home
         - name: {{ .Release.Name }}-casc
-          mountPath: /var/config_casc
+          mountPath: /var/jenkins_home/config_casc
       volumes:
       - name: {{ .Release.Name }}-home
         persistentVolumeClaim:
