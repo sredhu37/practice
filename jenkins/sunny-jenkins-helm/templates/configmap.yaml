@@ -4,9 +4,7 @@ metadata:
   name: {{ .Release.Name }}-casc
   namespace: {{ .Release.Namespace }}
 data:
-{{ if .Values.casc }}
-  casc: |-
-    {{ .Values.casc }}
-{{ else }}
-  {{ (tpl (.Files.Glob "files/casc").AsConfig . ) | indent 2 }}
-{{ end }}
+  casc: |
+    {{ .Values.casc | default ({{ $files.Get "files/casc" }}) | indent 4 }}
+
+# {{ (tpl (.Files.Glob "files/casc").AsConfig . ) | indent 2 }}
