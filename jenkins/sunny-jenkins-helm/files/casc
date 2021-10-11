@@ -11,5 +11,9 @@ jenkins:
     local:
       allowsSignup: true
       enableCaptcha: false
+      users:
+      - id: {{ .Release.Name }}
+        name: {{ .Release.Name }}
+        password: {{ .Release.Name }}
   remotingSecurity:
     enabled: true
