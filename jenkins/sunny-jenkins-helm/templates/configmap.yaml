@@ -4,5 +4,5 @@ metadata:
   name: {{ .Release.Name }}-casc
   namespace: {{ .Release.Namespace }}
 data:
-  casc: |
-    {{ .Files.Get "files/casc" | indent 4 }}
+  casc: |-
+    {{ .Files.Get "files/casc" }}
