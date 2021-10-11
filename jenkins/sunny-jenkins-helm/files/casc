@@ -12,8 +12,8 @@ jenkins:
       allowsSignup: true
       enableCaptcha: false
       users:
-      - id: {{ .Release.Name }}
-        name: {{ .Release.Name }}
-        password: {{ .Release.Name }}
+      - id: ${ADMIN_USER}
+        name: ${ADMIN_USER}
+        password: ${ADMIN_PASSWORD}
   remotingSecurity:
     enabled: true
