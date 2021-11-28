@@ -6,11 +6,11 @@ metadata:
 spec:
   destination:
     namespace: argocd
-    server: 'https://kubernetes.default.svc'
+    server: 'https://kubernetes.default.svc'              # Same k8s cluster where the controller is running
   source:
-    path: argo_apps/docker-desktop/
+    path: argo_apps/
     repoURL: 'https://github.com/sredhu37/practice.git'
-    targetRevision: master
+    targetRevision: dev
   project: default
   syncPolicy:
     automated:

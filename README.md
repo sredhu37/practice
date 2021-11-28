@@ -1,18 +1,58 @@
+# For users
+
+Nothing yet!!!
+
 # For Developers/Administrators
 
-## Docker Desktop K8S cluster setup
+## Pre-requisites
+
+* Create `GCP account`. (We will get 300 USD or ~ 22000 INR initially as free tier for the first 3 months.)
+* Install `gcloud CLI` on dev-machine.
+* Configure gcloud using `gcloud init`.
+* Create `service account` in GCP and get the associated `key`.
+* Create `Terraform Cloud free account`. (We won't be able to use some premium features, but that's the price we pay (or don't pay :p) for a free account.)
+* Install `Terraform CLI` on dev-machine.
+* Install `kubectl` on dev-machine.
+
+
+## After creating GKE cluster, run the following steps to do the setup
 
 ### Create namespaces:
 
-`kubectl apply -f manual-setup/namespaces.yaml`
+`kubectl apply -f manual_setup/01_namespaces.yaml`
+
+### Install sealed-secrets from bitnami
+
+- Download kubeseal CLI and move to path
+
+- `kubectl apply -n sealedsecrets -f manual_setup/02_sealedsecrets-controller.yaml`
+
+### Install the sealing secret
+
+- Secret is stored in my system. Can't disclose it. But deploy this secret in all the clusters in kube-system namespace.
+
+`kubectl apply -f <path_to_secret.yaml> -n kube-system`
+
+- Certificate(present in the secret) is used to encrypt the secrets and decrypt the sealedsecrets.
+
+- `kubeseal --fetch-cert` will get the certificate from the latest key. A new gets generated every month. However, I will be using the older one for now as it's being used in multiple clusters.
+
+#### Encrypt secrets to sealed-secrets:
+
+- Create the secret.yaml file.
+- Encrypt this secret using kubeseal:
+
+  `kubeseal --cert=path_to_cert_file -o yaml --scope cluster-wide <secret.yaml >sealedsecret.yaml`
 
 ### Install argocd
 
-`kubectl apply -n argocd -f manual_setup/argocd-server.yaml`
+- Download argocd CLI and move to path.
+
+- `kubectl apply -n argocd -f manual_setup/03_argocd-controller.yaml`
 
 ### Install app-of-apps
 
-`kubectl apply -f manual_setup/argocd-app.yaml`
+`kubectl apply -f manual_setup/04_argocd-app.yaml`
 
 ### Make argocd accessible:
 
@@ -70,7 +110,7 @@ Jenkins.instance.pluginManager.plugins.each{
 
 ### Prod version (On GKE)
 
-`helm install -n jenkins jenkins/sunny-jenkins-helm/.`
+`helm install -n jenkins jenkins jenkins/sunny-jenkins-helm/.`
 
 ### Check if Chart installed
 
