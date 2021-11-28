@@ -1,6 +1,21 @@
+# For users
+
+Nothing yet!!!
+
 # For Developers/Administrators
 
-## After creating GCP K8S cluster, run the following steps to do the setup
+## Pre-requisites
+
+* Create `GCP account`. (We will get 300 USD or ~ 22000 INR initially as free tier for the first 3 months.)
+* Install `gcloud CLI` on dev-machine.
+* Configure gcloud using `gcloud init`.
+* Create `service account` in GCP and get the associated `key`.
+* Create `Terraform Cloud free account`. (We won't be able to use some premium features, but that's the price we pay (or don't pay :p) for a free account.)
+* Install `Terraform CLI` on dev-machine.
+* Install `kubectl` on dev-machine.
+
+
+## After creating GKE cluster, run the following steps to do the setup
 
 ### Create namespaces:
 

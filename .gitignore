@@ -1,1 +1,3 @@
 *.pem
+secret_*
+terraform.tfstate*
