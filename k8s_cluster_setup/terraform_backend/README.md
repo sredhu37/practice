@@ -5,6 +5,8 @@
 1. Create `GCP account`.
 2. Create `project` in GCP account from Step 1.
 3. Create `service account` for the project in Step 2.
+4. Put the service account `json key` in this folder. Name of the file: `secret_tf_gcp_sa_key.json`
+5. Install `Terraform CLI`.
 
 ## Create bucket
 

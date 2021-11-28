@@ -1,4 +1,5 @@
 *.pem
 secret_*
-.terraform/*
+.terraform*
+*/.terraform/*
 *.tfstate*
