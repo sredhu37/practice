@@ -8,7 +8,8 @@ metadata:
 spec:
   destination:
     namespace: jenkins
-    server: 'https://kubernetes.default.svc'
+    # server: 'https://kubernetes.default.svc'
+    server: 'https://35.244.2.173/'
   project: default
   syncPolicy:
     automated:
@@ -17,7 +18,7 @@ spec:
   source:
     path: jenkins/sunny-jenkins-helm/
     repoURL: 'https://github.com/sredhu37/practice.git'
-    targetRevision: dev
+    targetRevision: master
     helm:
       valueFiles:
       - values-dev.yaml

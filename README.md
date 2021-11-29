@@ -1,66 +1,66 @@
-# For users
+# 1. For users
 
 Nothing yet!!!
 
-# For Developers/Administrators
+# 2. For Developers/Administrators
 
-## Pre-requisites
+## 2.1. Pre-requisites
 
-* Create `GCP account`. (We will get 300 USD or ~ 22000 INR initially as free tier for the first 3 months.)
-* Install `gcloud CLI` on dev-machine.
-* Configure gcloud using `gcloud init`.
-* Create `service account` in GCP and get the associated `key`.
-* Create `Terraform Cloud free account`. (We won't be able to use some premium features, but that's the price we pay (or don't pay :p) for a free account.)
-* Install `Terraform CLI` on dev-machine.
-* Install `kubectl` on dev-machine.
+* 2.1.1. Create `GCP account`. (We will get 300 USD or ~ 22000 INR initially as free tier for the first 3 months.)
+* 2.1.2. Install `gcloud CLI` on dev-machine.
+* 2.1.3. Create `project` in GCP account.
+* 2.1.4. Create `service account` in the same project.
+* 2.1.5. Configure gcloud using `gcloud init`.
+* 2.1.6. Create `service account` in GCP and get the associated `key`.
+* 2.1.7. Put the service account `json key` in `k8s_cluster_setup/terraform_backend` and `k8s_cluster_setup/gke` folders. Name the file as `secret_tf_gcp_sa_key.json`.
+* 2.1.8. Install `Terraform CLI` on dev-machine.
+* 2.1.9. Install `kubectl` on dev-machine.
+* 2.1.10. Download `argocd CLI` and move to path.
 
 
-## After creating GKE cluster, run the following steps to do the setup
+## 2.2. Create Terraform Backend
 
-### Create namespaces:
+Follow the steps mentioned inside [k8s_cluster_setup/terraform_backend](./k8s_cluster_setup/terraform_backend/README.md)
 
-`kubectl apply -f manual_setup/01_namespaces.yaml`
+## 2.3. Create GKE cluster
 
-### Install sealed-secrets from bitnami
+Follow the steps mentioned inside [k8s_cluster_setup/gke](./k8s_cluster_setup/gke/README.md)
 
-- Download kubeseal CLI and move to path
+## 2.4. Setup
 
-- `kubectl apply -n sealedsecrets -f manual_setup/02_sealedsecrets-controller.yaml`
+### 2.4.1. Create namespaces:
 
-### Install the sealing secret
+```
+kubectl apply -f manual_setup/01_namespaces.yaml
+```
 
-- Secret is stored in my system. Can't disclose it. But deploy this secret in all the clusters in kube-system namespace.
+### 2.4.2. Install argocd
 
-`kubectl apply -f <path_to_secret.yaml> -n kube-system`
+```
+kubectl apply -n argocd -f manual_setup/02_argocd-controller.yaml
+```
 
-- Certificate(present in the secret) is used to encrypt the secrets and decrypt the sealedsecrets.
+### 2.4.3. Install app-of-apps
 
-- `kubeseal --fetch-cert` will get the certificate from the latest key. A new gets generated every month. However, I will be using the older one for now as it's being used in multiple clusters.
+To get GKE server value, run the following command:
+```
+kubectl config view -o "jsonpath={.clusters[?(@.name == 'gke_sunny-gcp1-practice_asia-south1_sunny-gcp1-gke-cluster-1')].cluster.server}"
+```
 
-#### Encrypt secrets to sealed-secrets:
+Set `.spec.destination.server` value in `manual_setup/03_argocd-app.yaml` file and all the `kind: Application` files in `argo_apps/` to the GKE server value.
 
-- Create the secret.yaml file.
-- Encrypt this secret using kubeseal:
+Then run:
+```
+kubectl apply -f manual_setup/03_argocd-app.yaml
+```
 
-  `kubeseal --cert=path_to_cert_file -o yaml --scope cluster-wide <secret.yaml >sealedsecret.yaml`
+### 2.4.4. Access argocd:
 
-### Install argocd
+```
+kubectl get svc -n argocd argocd-server -o "jsonpath={.status.loadBalancer.ingress[*].ip}"
+```
 
-- Download argocd CLI and move to path.
-
-- `kubectl apply -n argocd -f manual_setup/03_argocd-controller.yaml`
-
-### Install app-of-apps
-
-`kubectl apply -f manual_setup/04_argocd-app.yaml`
-
-### Make argocd accessible:
-
-`kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'`
-
-`nodePort=$(kubectl get service argocd-server -n argocd -o "jsonpath={.spec.ports[?(@.name=='http')].nodePort}")`
-
-Now we can access argocd UI at http://127.0.0.1:${nodePort}
+Now access argocd UI using the value from previous command.
 
 ### Getting credentials
 
@@ -70,7 +70,9 @@ Password: `kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath=
 
 ### Deploy ingress controller:
 
-`kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/cloud/deploy.yaml`
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/cloud/deploy.yaml
+```
 
 
 ## TESTING JENKINS IMAGE

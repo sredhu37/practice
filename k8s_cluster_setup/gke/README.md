@@ -2,20 +2,28 @@
 
 ## Pre-requisites
 
-1. Make sure that you have Terraform backend ready. If not, please follow [this documentation](../terraform_backend/README.md).
-2. Install `gcloud cli` if not already installed.
-3. Put the service account `json key` in this folder. Name of the file: `secret_tf_gcp_sa_key.json`
-4. `gcloud auth application-default login`
+1. Complete the pre-requisites from [main README.md](../../README.md).
+2. Make sure that you have Terraform backend ready. If not, please follow [this documentation](../terraform_backend/README.md).
 
 ## Cluster creation
 
 ```
+cd k8s_cluster_setup/gke
+gcloud auth application-default login
+
 terraform fmt
 terraform init
 terraform validate
 terraform plan
 terraform apply -auto-approve
 ```
+Once the GKE cluster is created:
+```
+gcloud container clusters get-credentials sunny-gcp1-gke-cluster-1 --region asia-south1 --project sunny-gcp1-practice
+
+kubectl config get-contexts
+```
+Make sure that you are seeing your cluster in the output from the last command.
 
 ## Destroy cluster
 
