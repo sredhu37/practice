@@ -20,11 +20,34 @@ Nothing yet!!!
 
 ## 2.2. Create Terraform Backend
 
-Follow the steps mentioned inside [k8s_cluster_setup/terraform_backend](./k8s_cluster_setup/terraform_backend/README.md)
+<b>NOTE:</b> Execute this locally on your dev-machine and do not push the `terraform.tfstate*` files to any VCS/SCM, but keep them safe on the dev-machine.
+
+```
+terraform -chdir="k8s_cluster_setup/terraform_backend" fmt
+terraform -chdir="k8s_cluster_setup/terraform_backend" init
+terraform -chdir="k8s_cluster_setup/terraform_backend" validate
+terraform -chdir="k8s_cluster_setup/terraform_backend" plan
+terraform -chdir="k8s_cluster_setup/terraform_backend" apply -auto-approve
+```
 
 ## 2.3. Create GKE cluster
 
-Follow the steps mentioned inside [k8s_cluster_setup/gke](./k8s_cluster_setup/gke/README.md)
+```
+gcloud auth application-default login
+
+terraform -chdir="k8s_cluster_setup/gke" fmt
+terraform -chdir="k8s_cluster_setup/gke" init
+terraform -chdir="k8s_cluster_setup/gke" validate
+terraform -chdir="k8s_cluster_setup/gke" plan
+terraform -chdir="k8s_cluster_setup/gke" apply -auto-approve
+```
+Once the GKE cluster is created:
+```
+gcloud container clusters get-credentials sunny-gcp1-gke-cluster-1 --region asia-south1-a --project sunny-gcp1-practice
+
+kubectl config get-contexts
+```
+Make sure that you are seeing your cluster in the output from the last command.
 
 ## 2.4. Setup
 
@@ -42,14 +65,6 @@ kubectl apply -n argocd -f manual_setup/02_argocd-controller.yaml
 
 ### 2.4.3. Install app-of-apps
 
-To get GKE server value, run the following command:
-```
-kubectl config view -o "jsonpath={.clusters[?(@.name == 'gke_sunny-gcp1-practice_asia-south1_sunny-gcp1-gke-cluster-1')].cluster.server}"
-```
-
-Set `.spec.destination.server` value in `manual_setup/03_argocd-app.yaml` file and all the `kind: Application` files in `argo_apps/` to the GKE server value.
-
-Then run:
 ```
 kubectl apply -f manual_setup/03_argocd-app.yaml
 ```
@@ -62,18 +77,27 @@ kubectl get svc -n argocd argocd-server -o "jsonpath={.status.loadBalancer.ingre
 
 Now access argocd UI using the value from previous command.
 
-### Getting credentials
+### 2.4.5. Getting credentials
 
 Username: `admin`
 
 Password: `kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d`
 
-### Deploy ingress controller:
+### 2.4.6. Deploy ingress controller:
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/cloud/deploy.yaml
 ```
 
+### 2.4.7. Destroy infrastructure
+
+Once you are done with experimenting with the project, feel free to destroy the infra in order to avoid additional cost.
+
+```
+terraform -chdir="k8s_cluster_setup/gke" destroy -auto-approve
+
+terraform -chdir="k8s_cluster_setup/terraform_backend" destroy -auto-approve
+```
 
 ## TESTING JENKINS IMAGE
 
@@ -117,3 +141,4 @@ Jenkins.instance.pluginManager.plugins.each{
 ### Check if Chart installed
 
 `helm ls -n jenkins`
+

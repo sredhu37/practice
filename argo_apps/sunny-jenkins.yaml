@@ -8,8 +8,7 @@ metadata:
 spec:
   destination:
     namespace: jenkins
-    # server: 'https://kubernetes.default.svc'
-    server: 'https://35.244.2.173/'
+    server: 'https://kubernetes.default.svc'
   project: default
   syncPolicy:
     automated:
