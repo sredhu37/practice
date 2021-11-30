@@ -1,77 +1,103 @@
-# For users
+# 1. For users
 
 Nothing yet!!!
 
-# For Developers/Administrators
+# 2. For Developers/Administrators
 
-## Pre-requisites
+## 2.1. Pre-requisites
 
-* Create `GCP account`. (We will get 300 USD or ~ 22000 INR initially as free tier for the first 3 months.)
-* Install `gcloud CLI` on dev-machine.
-* Configure gcloud using `gcloud init`.
-* Create `service account` in GCP and get the associated `key`.
-* Create `Terraform Cloud free account`. (We won't be able to use some premium features, but that's the price we pay (or don't pay :p) for a free account.)
-* Install `Terraform CLI` on dev-machine.
-* Install `kubectl` on dev-machine.
+* 2.1.1. Create `GCP account`. (We will get 300 USD or ~ 22000 INR initially as free tier for the first 3 months.)
+* 2.1.2. Install `gcloud CLI` on dev-machine.
+* 2.1.3. Create `project` in GCP account.
+* 2.1.4. Create `service account` in the same project.
+* 2.1.5. Configure gcloud using `gcloud init`.
+* 2.1.6. Create `service account` in GCP and get the associated `key`.
+* 2.1.7. Put the service account `json key` in `k8s_cluster_setup/terraform_backend` and `k8s_cluster_setup/gke` folders. Name the file as `secret_tf_gcp_sa_key.json`.
+* 2.1.8. Install `Terraform CLI` on dev-machine.
+* 2.1.9. Install `kubectl` on dev-machine.
+* 2.1.10. Download `argocd CLI` and move to path.
 
 
-## After creating GKE cluster, run the following steps to do the setup
+## 2.2. Create Terraform Backend
 
-### Create namespaces:
+<b>NOTE:</b> Execute this locally on your dev-machine and do not push the `terraform.tfstate*` files to any VCS/SCM, but keep them safe on the dev-machine.
 
-`kubectl apply -f manual_setup/01_namespaces.yaml`
+```
+terraform -chdir="k8s_cluster_setup/terraform_backend" fmt
+terraform -chdir="k8s_cluster_setup/terraform_backend" init
+terraform -chdir="k8s_cluster_setup/terraform_backend" validate
+terraform -chdir="k8s_cluster_setup/terraform_backend" plan
+terraform -chdir="k8s_cluster_setup/terraform_backend" apply -auto-approve
+```
 
-### Install sealed-secrets from bitnami
+## 2.3. Create GKE cluster
 
-- Download kubeseal CLI and move to path
+```
+gcloud auth application-default login
 
-- `kubectl apply -n sealedsecrets -f manual_setup/02_sealedsecrets-controller.yaml`
+terraform -chdir="k8s_cluster_setup/gke" fmt
+terraform -chdir="k8s_cluster_setup/gke" init
+terraform -chdir="k8s_cluster_setup/gke" validate
+terraform -chdir="k8s_cluster_setup/gke" plan
+terraform -chdir="k8s_cluster_setup/gke" apply -auto-approve
+```
+Once the GKE cluster is created:
+```
+gcloud container clusters get-credentials sunny-gcp1-gke-cluster-1 --region asia-south1-a --project sunny-gcp1-practice
 
-### Install the sealing secret
+kubectl config get-contexts
+```
+Make sure that you are seeing your cluster in the output from the last command.
 
-- Secret is stored in my system. Can't disclose it. But deploy this secret in all the clusters in kube-system namespace.
+## 2.4. Setup
 
-`kubectl apply -f <path_to_secret.yaml> -n kube-system`
+### 2.4.1. Create namespaces:
 
-- Certificate(present in the secret) is used to encrypt the secrets and decrypt the sealedsecrets.
+```
+kubectl apply -f manual_setup/01_namespaces.yaml
+```
 
-- `kubeseal --fetch-cert` will get the certificate from the latest key. A new gets generated every month. However, I will be using the older one for now as it's being used in multiple clusters.
+### 2.4.2. Install argocd
 
-#### Encrypt secrets to sealed-secrets:
+```
+kubectl apply -n argocd -f manual_setup/02_argocd-controller.yaml
+```
 
-- Create the secret.yaml file.
-- Encrypt this secret using kubeseal:
+### 2.4.3. Install app-of-apps
 
-  `kubeseal --cert=path_to_cert_file -o yaml --scope cluster-wide <secret.yaml >sealedsecret.yaml`
+```
+kubectl apply -f manual_setup/03_argocd-app.yaml
+```
 
-### Install argocd
+### 2.4.4. Access argocd:
 
-- Download argocd CLI and move to path.
+```
+kubectl get svc -n argocd argocd-server -o "jsonpath={.status.loadBalancer.ingress[*].ip}"
+```
 
-- `kubectl apply -n argocd -f manual_setup/03_argocd-controller.yaml`
+Now access argocd UI using the value from previous command.
 
-### Install app-of-apps
-
-`kubectl apply -f manual_setup/04_argocd-app.yaml`
-
-### Make argocd accessible:
-
-`kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'`
-
-`nodePort=$(kubectl get service argocd-server -n argocd -o "jsonpath={.spec.ports[?(@.name=='http')].nodePort}")`
-
-Now we can access argocd UI at http://127.0.0.1:${nodePort}
-
-### Getting credentials
+### 2.4.5. Getting credentials
 
 Username: `admin`
 
 Password: `kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d`
 
-### Deploy ingress controller:
+### 2.4.6. Deploy ingress controller:
 
-`kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/cloud/deploy.yaml`
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/cloud/deploy.yaml
+```
 
+### 2.4.7. Destroy infrastructure
+
+Once you are done with experimenting with the project, feel free to destroy the infra in order to avoid additional cost.
+
+```
+terraform -chdir="k8s_cluster_setup/gke" destroy -auto-approve
+
+terraform -chdir="k8s_cluster_setup/terraform_backend" destroy -auto-approve
+```
 
 ## TESTING JENKINS IMAGE
 
@@ -115,3 +141,4 @@ Jenkins.instance.pluginManager.plugins.each{
 ### Check if Chart installed
 
 `helm ls -n jenkins`
+
