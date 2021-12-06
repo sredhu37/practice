@@ -6,6 +6,8 @@ Nothing yet!!!
 
 ## 2.1. Pre-requisites
 
+### Production env
+
 * 2.1.1. Create `GCP account`. (We will get 300 USD or ~ 22000 INR initially as free tier for the first 3 months.)
 * 2.1.2. Install `gcloud CLI` on dev-machine.
 * 2.1.3. Create `project` in GCP account.
@@ -57,16 +59,22 @@ Make sure that you are seeing your cluster in the output from the last command.
 kubectl apply -f manual_setup/01_namespaces.yaml
 ```
 
+### 2.4.2. Create Secure Secret K8S operator
+
+```
+kubectl apply -f manual_setup/02_secure-secret-k8s-operator.yaml
+```
+
 ### 2.4.2. Install argocd
 
 ```
-kubectl apply -n argocd -f manual_setup/02_argocd-controller.yaml
+kubectl apply -n argocd -f manual_setup/03_argocd-controller.yaml
 ```
 
 ### 2.4.3. Install app-of-apps
 
 ```
-kubectl apply -f manual_setup/03_argocd-app.yaml
+kubectl apply -f manual_setup/04_argocd-app.yaml
 ```
 
 ### 2.4.4. Access argocd:
@@ -132,13 +140,30 @@ Jenkins.instance.pluginManager.plugins.each{
 
 ### Dev version (On Docker Desktop K8S)
 
-`helm install -f jenkins/sunny-jenkins-helm/values-dev.yaml -n jenkins jenkins jenkins/sunny-jenkins-helm/.`
+```
+helm install -f jenkins/sunny-jenkins-helm/values-dev.yaml -n jenkins jenkins jenkins/sunny-jenkins-helm/.
+```
 
 ### Prod version (On GKE)
 
-`helm install -n jenkins jenkins jenkins/sunny-jenkins-helm/.`
+```
+helm install -n jenkins jenkins jenkins/sunny-jenkins-helm/.
+```
 
 ### Check if Chart installed
 
-`helm ls -n jenkins`
+```
+helm ls -n jenkins
+```
 
+
+io.jenkins.plugins.casc.ConfiguratorException: Invalid configuration: '/var/jenkins_home/casc_config/casc.yaml' isn't a valid path.
+
+## SecureSecrets
+
+### Pre-requisites
+
+* Install `gpg` cli.
+*
+
+### Create a GPG key

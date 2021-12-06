@@ -53,8 +53,7 @@ autoscaling:
 
 persitentVolumeClaim:
   storage: 5G
-  storageClassName: hostpath          # Docker desktop k8s cluster
-  # storageClassName: standard-rwo    # GKE cluster
+  storageClassName: hostpath    # Docker Desktop
 
 sealedSecrets:
   jcasc:
