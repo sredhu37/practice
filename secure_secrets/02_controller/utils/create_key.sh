@@ -1,21 +1,29 @@
 #!/bin/sh
 
-# Create random passphrase
-passphrase=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1)
-date_time=$(date +"%Y-%m-%d-%H-%M-%S")
-params_path="./gpg-params-${date_time}"
+print_help () {
+  echo "Usage: ./create_key.sh <namespace> <date_time>
+  namespace: normal string
+  date_time: should be in the format of '%Y-%m-%d %H:%M:%S' (Don't forget the quotes)
+  "
+}
 
-# Create gpg params file
+main () {
+  namespace="$1"
+  date_time="$2"
 
-cat >$params_path <<EOF
+  key_name="$namespace-$date_time"
+  params_path="./params-$key_name"
+  public_key_path="./public-$key_name.gpg"
+  passphrase="passphrase-$key_name"
+
+  # Create gpg params file
+  cat >$params_path <<EOF
   %echo Generating a basic OpenPGP key
   Key-Type: DSA
   Key-Length: 1024
   Subkey-Type: ELG-E
   Subkey-Length: 1024
-  Name-Real: gpg-key-${date_time}
-  # Name-Comment: with stupid passphrase
-  # Name-Email: joe@foo.bar
+  Name-Real: $key_name
   Expire-Date: 1y
   Passphrase: $passphrase
   # Do a commit here, so that we can later print "done" :-)
@@ -23,8 +31,22 @@ cat >$params_path <<EOF
   %echo done
 EOF
 
-# Create gpg key
-gpg --batch --generate-key $params_path
+  # Create gpg key
+  gpg --batch --armor --generate-key $params_path
 
-# Cleanup
-rm $params_path
+  # Print public gpg key
+  gpg --output $public_key_path --armor --export $key_name
+  cat $public_key_path
+
+  # Cleanup
+  rm $params_path
+  rm $public_key_path
+}
+
+if [ "$#" -ne 2 ]; then
+  print_help
+  exit 1
+else
+  date_time=$(date -d "$2" +"%Y-%m-%d-%H-%M-%S")
+  main "$1" "$date_time"
+fi
