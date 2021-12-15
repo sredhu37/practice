@@ -3,6 +3,7 @@ from datetime import datetime
 import os
 import kopf
 import subprocess
+import base64
 
 
 config.load_incluster_config()
@@ -43,9 +44,10 @@ class Secret:
 
     def create(self):
         sec = client.V1Secret()
+
         sec.metadata = client.V1ObjectMeta(name = self.name, owner_references = self.owner_references)
         sec.type = self.data_type
-        sec.data = {"username": "bXl1c2VybmFtZQ==", "password": "bXlwYXNzd29yZA=="}     # Update this after testing
+        sec.data = self.data
 
         k8s_api.create_namespaced_secret(namespace=self.namespace, body=sec)
 
@@ -90,17 +92,18 @@ def create_new_gpg_key(spec, body, **kwargs):
     # else:
     namespace = body.metadata.name
     result = subprocess.run(f"./utils/create_key.sh '{namespace}' '{now_str}'", shell=True, stdout=subprocess.PIPE)
-    public_key = result.stdout.decode('utf-8')
+    public_key = result.stdout
+    public_key_b64encoded = base64.b64encode(public_key)
 
     secret = Secret(
-        f"{namespace}-{now_hyphen_str}",
+        f"{namespace}-gpg-key-{now_hyphen_str}",
         namespace,
         "Opaque",
-        public_key
+        {"key": public_key_b64encoded.decode('utf-8')}
     )
 
-    # print(f"NewKeySecret: {secret}")
-    # secret.create()
+    print(f"NewKeySecret: {secret}")
+    secret.create()
 
 
 # @kopf.timer("secrets", interval=300, initial_delay=10, field='type', value='Opaque')      # Every 5 minutes
