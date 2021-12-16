@@ -75,35 +75,25 @@ class Secret:
 @kopf.timer("namespaces", interval=KEY_GENERATION_INTERVAL)
 def create_new_gpg_key(spec, body, **kwargs):
     now = datetime.now()
-    now_str = now.strftime('%Y-%m-%d %H:%M:%S')
-    now_hyphen_str = now.strftime('%Y-%m-%d-%H-%M-%S')
-
-    # keys_list = list_keys()
-    # if len(keys_list) > 0:
-    #     latest_key = keys_list[-1]
-    #     latest_key_datetime_str = latest_key.replace('gpg-key-', '')
-    #     latest_key_datetime = datetime.strptime(latest_key_datetime_str, '%Y-%m-%d-%H-%M-%S')
-
-    #     if (now - latest_key_datetime).total_seconds() < KEY_GENERATION_INTERVAL:
-    #         print(f"Last key created: {now - latest_key_datetime} ago i.e. {(now - latest_key_datetime).total_seconds()} seconds ago.")
-    #         print("Valid key already present. Hence, not creating a new one!")
-    #     else:
-    #         subprocess.run(f"./utils/create_key.sh ", shell=True, stdout=subprocess.PIPE)
-    # else:
     namespace = body.metadata.name
-    result = subprocess.run(f"./utils/create_key.sh '{namespace}' '{now_str}'", shell=True, stdout=subprocess.PIPE)
-    public_key = result.stdout
-    public_key_b64encoded = base64.b64encode(public_key)
 
-    secret = Secret(
-        f"{namespace}-gpg-key-{now_hyphen_str}",
-        namespace,
-        "Opaque",
-        {"key": public_key_b64encoded.decode('utf-8')}
-    )
+    keys_list = list_gpg_keys(namespace)
+    # print(f"keys_list for namespace {namespace}: {keys_list}")
+    if len(keys_list) > 0:
+        latest_key = keys_list[-1]
+        latest_key_name = latest_key.metadata.name
+        latest_key_datetime_str = latest_key_name.replace(f"{namespace}-gpg-key-", '')
+        latest_key_datetime = datetime.strptime(latest_key_datetime_str, '%Y-%m-%d-%H-%M-%S')
 
-    print(f"NewKeySecret: {secret}")
-    secret.create()
+        if (now - latest_key_datetime).total_seconds() < KEY_GENERATION_INTERVAL:
+            print(f"Last key created: {now - latest_key_datetime} ago i.e. {(now - latest_key_datetime).total_seconds()} seconds ago.")
+            print("Valid key already present. Hence, not creating a new one!")
+        else:
+            print("All gpg keys are too old. Creating a new one.")
+            create_gpg_key_and_secret(now, namespace)
+    else:
+        print(f"No gpg key exists for namespace: {namespace}. Creating a new one.")
+        create_gpg_key_and_secret(now, namespace)
 
 
 # @kopf.timer("secrets", interval=300, initial_delay=10, field='type', value='Opaque')      # Every 5 minutes
@@ -112,19 +102,17 @@ def create_new_gpg_key(spec, body, **kwargs):
 #     namespace = body.metadata.namespace
 #     data = body['data']
 
-#     keys_list = list_keys()
+#     keys_list = list_gpg_keys()
 #     for key, value in data.items():
 #         encrypt(value, keys_list)
 
 
-# def list_keys():
-#     keys_result = subprocess.run("gpg --list-keys | grep 'gpg-key-'", shell=True, stdout=subprocess.PIPE)
-#     keys_info_strings = keys_result.stdout.decode('utf-8')
-#     keys_info_list = filter(None, keys_info_strings.split('\n'))
-#     keys_list = list(map(lambda k: k.split()[2], keys_info_list))
-#     keys_list.sort()
-
-#     return keys_list
+def list_gpg_keys(namespace):
+    keys_result = k8s_api.list_namespaced_secret(namespace).items
+    gpg_keys = list(filter(lambda k: k.metadata.name.startswith(f"{namespace}-gpg-key-"), keys_result))
+    sorted_gpg_keys = sorted(gpg_keys, key=lambda x: x.metadata.name)
+    print(f"Sorted keys: {sorted_gpg_keys}")
+    return sorted_gpg_keys
 
 
 # def encrypt(text, keys_list):
@@ -150,3 +138,22 @@ def create_new_gpg_key(spec, body, **kwargs):
 
 # def decrypt(text, keys_list):
 #     pass
+
+def create_gpg_key_and_secret(now, namespace):
+    now_str = now.strftime('%Y-%m-%d %H:%M:%S')
+    now_hyphen_str = now.strftime('%Y-%m-%d-%H-%M-%S')
+
+    result = subprocess.run(f"./utils/create_key.sh '{namespace}' '{now_str}'", shell=True, stdout=subprocess.PIPE)
+    public_key = result.stdout
+    public_key_b64encoded = base64.b64encode(public_key)
+
+    secret = Secret(
+        f"{namespace}-gpg-key-{now_hyphen_str}",
+        namespace,
+        "Opaque",
+        {"key": public_key_b64encoded.decode('utf-8')}
+    )
+
+    # print(f"NewKeySecret: {secret}")
+    secret.create()
+    print(f"Created new gpg key: {secret.name}")
