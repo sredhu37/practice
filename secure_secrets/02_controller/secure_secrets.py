@@ -4,13 +4,13 @@ import os
 import kopf
 import subprocess
 import base64
-
+import key_utils
 
 config.load_incluster_config()
 k8s_api = client.CoreV1Api()
 
 KEY_GENERATION_INTERVAL = 3600      # 1 hour for now. After testing, change it to 6 months.
-
+KEY_TYPE = 'fernet-key'
 
 class Secret:
     def __init__(self, name, namespace, data_type, data, ss=None):
@@ -73,27 +73,26 @@ class Secret:
 
 
 @kopf.timer("namespaces", interval=KEY_GENERATION_INTERVAL)
-def create_new_gpg_key(spec, body, **kwargs):
+def create_new_key(spec, body, **kwargs):
     now = datetime.now()
     namespace = body.metadata.name
 
-    keys_list = list_gpg_keys(namespace)
+    keys_list = list_keys(namespace)
     # print(f"keys_list for namespace {namespace}: {keys_list}")
     if len(keys_list) > 0:
         latest_key = keys_list[-1]
         latest_key_name = latest_key.metadata.name
-        latest_key_datetime_str = latest_key_name.replace(f"{namespace}-gpg-key-", '')
+        latest_key_datetime_str = latest_key_name.replace(f"{namespace}-ssh-key-", '')
         latest_key_datetime = datetime.strptime(latest_key_datetime_str, '%Y-%m-%d-%H-%M-%S')
 
         if (now - latest_key_datetime).total_seconds() < KEY_GENERATION_INTERVAL:
-            print(f"Last key created: {now - latest_key_datetime} ago i.e. {(now - latest_key_datetime).total_seconds()} seconds ago.")
-            print("Valid key already present. Hence, not creating a new one!")
+            print(f"Last key {latest_key_name} created: {now - latest_key_datetime} ago i.e. {(now - latest_key_datetime).total_seconds()} seconds ago. Valid key already present. Hence, not creating a new one!")
         else:
-            print("All gpg keys are too old. Creating a new one.")
-            create_gpg_key_and_secret(now, namespace)
+            print("All ssh keys are too old. Creating a new one.")
+            create_key_and_secret(now, namespace)
     else:
-        print(f"No gpg key exists for namespace: {namespace}. Creating a new one.")
-        create_gpg_key_and_secret(now, namespace)
+        print(f"No ssh key exists for namespace: {namespace}. Creating a new one.")
+        create_key_and_secret(now, namespace)
 
 
 # @kopf.timer("secrets", interval=300, initial_delay=10, field='type', value='Opaque')      # Every 5 minutes
@@ -102,58 +101,42 @@ def create_new_gpg_key(spec, body, **kwargs):
 #     namespace = body.metadata.namespace
 #     data = body['data']
 
-#     keys_list = list_gpg_keys()
+#     keys_list = list_keys()
 #     for key, value in data.items():
 #         encrypt(value, keys_list)
 
 
-def list_gpg_keys(namespace):
+def list_keys(namespace):
     keys_result = k8s_api.list_namespaced_secret(namespace).items
-    gpg_keys = list(filter(lambda k: k.metadata.name.startswith(f"{namespace}-gpg-key-"), keys_result))
-    sorted_gpg_keys = sorted(gpg_keys, key=lambda x: x.metadata.name)
-    print(f"Sorted keys: {sorted_gpg_keys}")
-    return sorted_gpg_keys
+    encryption_keys = list(filter(lambda k: k.metadata.name.startswith(f"{namespace}-{KEY_TYPE}-"), keys_result))
+    sorted_keys = sorted(encryption_keys, key=lambda x: x.metadata.name)
+    # print(f"Sorted keys: {sorted_keys}")
+    return sorted_keys
 
 
-# def encrypt(text, keys_list):
-#     input_file_name = "text_file"
-#     output_file_name = "text_file_encrypted"
-#     latest_key_name = keys_list[-1]
-
-#     input_file = open(input_file_name, "w")
-#     input_file.write(text)
-
-#     if os.path.exists(output_file_name):
-#         os.remove(output_file_name)
-
-#     subprocess.run(f"gpg --output {output_file_name} --armor --encrypt --recipient {latest_key_name} {input_file_name}", shell=True, stdout=subprocess.PIPE)
-
-#     input_file.close()
-#     if os.path.exists(input_file_name):
-#         os.remove(input_file_name)
-
-#     output_file = open(output_file_name, "r")
-#     print(f"Encrypted file content: {output_file.read()}")
-
+def encrypt(text, keys_list):
+    latest_key_name = keys_list[-1]
+    key_utils.encrypt_using_fernet_key()
 
 # def decrypt(text, keys_list):
 #     pass
 
-def create_gpg_key_and_secret(now, namespace):
-    now_str = now.strftime('%Y-%m-%d %H:%M:%S')
+def create_key_and_secret(now, namespace):
     now_hyphen_str = now.strftime('%Y-%m-%d-%H-%M-%S')
 
-    result = subprocess.run(f"./utils/create_key.sh '{namespace}' '{now_str}'", shell=True, stdout=subprocess.PIPE)
-    public_key = result.stdout
-    public_key_b64encoded = base64.b64encode(public_key)
+    # Create ssh keypair
+    fernet_key = key_utils.create_fernet_key()
+    fernet_key_b64encoded = base64.b64encode(fernet_key)
 
     secret = Secret(
-        f"{namespace}-gpg-key-{now_hyphen_str}",
+        f"{namespace}-{KEY_TYPE}-{now_hyphen_str}",
         namespace,
         "Opaque",
-        {"key": public_key_b64encoded.decode('utf-8')}
+        {
+            "fernet_key": fernet_key_b64encoded.decode('utf-8')
+        }
     )
 
     # print(f"NewKeySecret: {secret}")
     secret.create()
-    print(f"Created new gpg key: {secret.name}")
+    print(f"Created new ssh key: {secret.name}")
