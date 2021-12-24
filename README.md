@@ -8,15 +8,15 @@ Nothing yet!!!
 
 ### Production env
 
-* 2.1.1. Create `GCP account`. (We will get 300 USD or ~ 22000 INR initially as free tier for the first 3 months.)
-* 2.1.2. Install `gcloud CLI` on dev-machine.
+* 2.1.1. [Create GCP account](https://console.cloud.google.com). (You will get 300 USD or ~ 22000 INR initially as free tier for the first 3 months.)
+* 2.1.2. [Install gcloud CLI](https://cloud.google.com/sdk/docs/install) on dev-machine.
 * 2.1.3. Create `project` in GCP account.
 * 2.1.4. Create `service account` in the same project.
 * 2.1.5. Configure gcloud using `gcloud init`.
 * 2.1.6. Create `service account` in GCP and get the associated `key`.
 * 2.1.7. Put the service account `json key` in `k8s_cluster_setup/terraform_backend` and `k8s_cluster_setup/gke` folders. Name the file as `secret_tf_gcp_sa_key.json`.
-* 2.1.8. Install `Terraform CLI` on dev-machine.
-* 2.1.9. Install `kubectl` on dev-machine.
+* 2.1.8. [Install Terraform CLI](https://learn.hashicorp.com/tutorials/terraform/install-cli) on dev-machine.
+* 2.1.9. [Install kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/) on dev-machine.
 * 2.1.10. Download `argocd CLI` and move to path.
 
 

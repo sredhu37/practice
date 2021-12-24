@@ -10,7 +10,7 @@ config.load_incluster_config()
 k8s_api = client.CoreV1Api()
 
 KEY_GENERATION_INTERVAL = 3600      # 1 hour for now. After testing, change it to 6 months.
-KEY_TYPE = 'fernet-key'
+KEY_TYPE = 'ssh-key'
 
 class Secret:
     def __init__(self, name, namespace, data_type, data, ss=None):
@@ -77,22 +77,26 @@ def create_new_key(spec, body, **kwargs):
     now = datetime.now()
     namespace = body.metadata.name
 
-    keys_list = list_keys(namespace)
-    # print(f"keys_list for namespace {namespace}: {keys_list}")
-    if len(keys_list) > 0:
-        latest_key = keys_list[-1]
-        latest_key_name = latest_key.metadata.name
-        latest_key_datetime_str = latest_key_name.replace(f"{namespace}-ssh-key-", '')
-        latest_key_datetime = datetime.strptime(latest_key_datetime_str, '%Y-%m-%d-%H-%M-%S')
-
-        if (now - latest_key_datetime).total_seconds() < KEY_GENERATION_INTERVAL:
-            print(f"Last key {latest_key_name} created: {now - latest_key_datetime} ago i.e. {(now - latest_key_datetime).total_seconds()} seconds ago. Valid key already present. Hence, not creating a new one!")
-        else:
-            print("All ssh keys are too old. Creating a new one.")
-            create_key_and_secret(now, namespace)
+    # Ignore kube namespaces
+    if namespace.startswith('kube-'):
+        print(f"Skipping namespace: {namespace} as it starts with kube!")
     else:
-        print(f"No ssh key exists for namespace: {namespace}. Creating a new one.")
-        create_key_and_secret(now, namespace)
+        keys_list = list_keys(namespace)
+        # print(f"keys_list for namespace {namespace}: {keys_list}")
+        if len(keys_list) > 0:
+            latest_key = keys_list[-1]
+            latest_key_name = latest_key.metadata.name
+            latest_key_datetime_str = latest_key_name.replace(f"{namespace}-ssh-key-", '')
+            latest_key_datetime = datetime.strptime(latest_key_datetime_str, '%Y-%m-%d-%H-%M-%S')
+
+            if (now - latest_key_datetime).total_seconds() < KEY_GENERATION_INTERVAL:
+                print(f"Last key {latest_key_name} created: {now - latest_key_datetime} ago i.e. {(now - latest_key_datetime).total_seconds()} seconds ago. Valid key already present. Hence, not creating a new one!")
+            else:
+                print("All ssh keys are too old. Creating a new one.")
+                create_key_and_secret(now, namespace)
+        else:
+            print(f"No ssh key exists for namespace: {namespace}. Creating a new one.")
+            create_key_and_secret(now, namespace)
 
 
 # @kopf.timer("secrets", interval=300, initial_delay=10, field='type', value='Opaque')      # Every 5 minutes
@@ -116,7 +120,6 @@ def list_keys(namespace):
 
 def encrypt(text, keys_list):
     latest_key_name = keys_list[-1]
-    key_utils.encrypt_using_fernet_key()
 
 # def decrypt(text, keys_list):
 #     pass
@@ -125,15 +128,17 @@ def create_key_and_secret(now, namespace):
     now_hyphen_str = now.strftime('%Y-%m-%d-%H-%M-%S')
 
     # Create ssh keypair
-    fernet_key = key_utils.create_fernet_key()
-    fernet_key_b64encoded = base64.b64encode(fernet_key)
+    public_key_str, private_key_str = key_utils.generate_ssh_key_pair()
+    public_key_b64encoded = base64.b64encode(public_key_str.encode())
+    private_key_b64encoded = base64.b64encode(private_key_str.encode())
 
     secret = Secret(
         f"{namespace}-{KEY_TYPE}-{now_hyphen_str}",
         namespace,
         "Opaque",
         {
-            "fernet_key": fernet_key_b64encoded.decode('utf-8')
+            "public_key": public_key_b64encoded.decode(),
+            "private_key": private_key_b64encoded.decode()
         }
     )
 
