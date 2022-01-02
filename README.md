@@ -163,7 +163,7 @@ io.jenkins.plugins.casc.ConfiguratorException: Invalid configuration: '/var/jenk
 
 ### Pre-requisites
 
-* Install `gpg` cli.
+* Install `openssl` cli.
 *
 
-### Create a GPG key
+### Create a SSH key

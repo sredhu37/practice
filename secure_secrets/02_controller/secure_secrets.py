@@ -4,13 +4,13 @@ import os
 import kopf
 import subprocess
 import base64
-import key_utils
+from cryptography.fernet import Fernet
 
 config.load_incluster_config()
 k8s_api = client.CoreV1Api()
 
 KEY_GENERATION_INTERVAL = 3600      # 1 hour for now. After testing, change it to 6 months.
-KEY_TYPE = 'ssh-key'
+KEY_TYPE = 'fernet-key'
 
 class Secret:
     def __init__(self, name, namespace, data_type, data, ss=None):
@@ -86,16 +86,16 @@ def create_new_key(spec, body, **kwargs):
         if len(keys_list) > 0:
             latest_key = keys_list[-1]
             latest_key_name = latest_key.metadata.name
-            latest_key_datetime_str = latest_key_name.replace(f"{namespace}-ssh-key-", '')
+            latest_key_datetime_str = latest_key_name.replace(f"{namespace}-fernet-key-", '')
             latest_key_datetime = datetime.strptime(latest_key_datetime_str, '%Y-%m-%d-%H-%M-%S')
 
             if (now - latest_key_datetime).total_seconds() < KEY_GENERATION_INTERVAL:
                 print(f"Last key {latest_key_name} created: {now - latest_key_datetime} ago i.e. {(now - latest_key_datetime).total_seconds()} seconds ago. Valid key already present. Hence, not creating a new one!")
             else:
-                print("All ssh keys are too old. Creating a new one.")
+                print("All fernet keys are too old. Creating a new one.")
                 create_key_and_secret(now, namespace)
         else:
-            print(f"No ssh key exists for namespace: {namespace}. Creating a new one.")
+            print(f"No fernet key exists for namespace: {namespace}. Creating a new one.")
             create_key_and_secret(now, namespace)
 
 
@@ -127,21 +127,19 @@ def encrypt(text, keys_list):
 def create_key_and_secret(now, namespace):
     now_hyphen_str = now.strftime('%Y-%m-%d-%H-%M-%S')
 
-    # Create ssh keypair
-    public_key_str, private_key_str = key_utils.generate_ssh_key_pair()
-    public_key_b64encoded = base64.b64encode(public_key_str.encode())
-    private_key_b64encoded = base64.b64encode(private_key_str.encode())
+    # Create fernet key
+    fernet_key = Fernet.generate_key()
+    fernet_key_b64encoded = base64.b64encode(fernet_key)
 
     secret = Secret(
         f"{namespace}-{KEY_TYPE}-{now_hyphen_str}",
         namespace,
         "Opaque",
         {
-            "public_key": public_key_b64encoded.decode(),
-            "private_key": private_key_b64encoded.decode()
+            "fernet_key": fernet_key_b64encoded.decode()
         }
     )
 
     # print(f"NewKeySecret: {secret}")
     secret.create()
-    print(f"Created new ssh key: {secret.name}")
+    print(f"Created new fernet key: {secret.name}")
