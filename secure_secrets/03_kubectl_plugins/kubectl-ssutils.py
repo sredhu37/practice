@@ -137,7 +137,7 @@ def main():
     else:
         # Encrypt all secrets in the given namespace
         if d_arguments["method"] == "encrypt":
-            encrypt_secrets(L_SECRETS_IN_NAMESPACE)
+            encrypt_secrets(o_fernet_key, L_SECRETS_IN_NAMESPACE)
         elif d_arguments["method"] == "decrypt":
             print("To be implemented!")
             pass
