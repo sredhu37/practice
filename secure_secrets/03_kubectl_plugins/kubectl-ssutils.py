@@ -58,7 +58,7 @@ def read_arguments():
                 d_arguments_result["encryptionsecret"] = s_currentValue
             elif s_currentArgument in ("-t", "--text"):
                 d_arguments_result["text"] = s_currentValue
-            elif: s_currentArgument in ("-s", "secret"):
+            elif s_currentArgument in ("-s", "secret"):
                 d_arguments_result["secret"] = s_currentValue
 
         # Check required arguments
@@ -104,7 +104,13 @@ def decrypt_text(o_fernet_key, s_text):
     return by_decrypted_text.decode()
 
 def encrypt_secrets(o_fernet_key, l_secrets_to_encrypt):
-    pass
+    # print(f"Secrets to encrypt: {l_secrets_to_encrypt}")
+    for secret in l_secrets_to_encrypt:
+        for key, value in secret.data.items():
+            print(f"key: {key}")
+            s_encrypted_text = encrypt_text(o_fernet_key, base64.b64decode(value).decode())
+            s_encrypted_text_b64_encoded = base64.b64encode(s_encrypted_text.encode()).decode()
+            print(f"encrypted_value b64 encoded: {s_encrypted_text_b64_encoded}")
 
 def decrypt_secure_secrets(o_fernet_key, l_secrets_to_decrypt):
     pass
@@ -146,5 +152,6 @@ def main():
 main()
 
 # Commands for testing:
-# python3 kubectl-ssutils.py -n jenkins -s fernet-key -m encrypt -t "Hello world!"
-# python3 kubectl-ssutils.py -n jenkins -s fernet-key -m decrypt -t "gAAAAABh0X5wMhFbxi6aSmIjR_ftPPMYGTOnfJkxF2Acytpw_8dBF81Ddk6kRB6xSFnfSfnzDRQpVpALRFhbyS3h5q9_bH4J3w=="
+# python3 kubectl-ssutils.py -n jenkins -e fernet-key -m encrypt -t "Hello world!"
+# python3 kubectl-ssutils.py -n jenkins -e fernet-key -m decrypt -t "gAAAAABh0X5wMhFbxi6aSmIjR_ftPPMYGTOnfJkxF2Acytpw_8dBF81Ddk6kRB6xSFnfSfnzDRQpVpALRFhbyS3h5q9_bH4J3w=="
+# python3 kubectl-ssutils.py -n jenkins -e fernet-key -m encrypt
