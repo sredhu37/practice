@@ -15,13 +15,14 @@ import getopt, sys, base64
 def print_help():
     s_help = """
         Usage:
-            kubectl-ssutils.py -n <namespace> -m <method> -s <secretname> [options]
+            kubectl-ssutils.py -n <namespace> -m <method> -e <encryptionsecret> [options]
 
             -h, --help                  Print help
             -n, --namespace             (required) namespace where the encryption key exists
-            -m, --method                (required) Method to call; Valid values: encrypt, decrypt
-            -s, --secretname            (required) name of the encryption secret; or an identifiable substring. Example: ssh-key
-            -t, --text                  (optional) text to encrypt
+            -m, --method                (required) method to call; Valid values: encrypt, decrypt
+            -e, --encryptionsecret      (required) name of the encryption secret; or an identifiable substring. Example: fernet-key
+            -t, --text                  (optional) text to encrypt; Don't use it with -s, --secret
+            -s, --secret                (optional) secret to encrypt; or an identifiable substring; Don't use it with -t, --text
     """
 
     print(s_help)
@@ -32,10 +33,10 @@ def read_arguments():
     l_argumentList = sys.argv[1:]
 
     # Options
-    s_options = "hn:m:s:t:"
+    s_options = "hn:m:e:t:s:"
 
     # Long options
-    l_long_options = ["help", "namespace", "method", "secretname", "text"]
+    l_long_options = ["help", "namespace", "method", "encryptionsecret", "text", "secret"]
 
     try:
         # Parsing argument
@@ -53,16 +54,18 @@ def read_arguments():
                     print("Error: Invalid values for <method>!")
                     print_help()
                 d_arguments_result["method"] = s_currentValue
-            elif s_currentArgument in ("-s", "--secretname"):
-                d_arguments_result["secret"] = s_currentValue
+            elif s_currentArgument in ("-e", "--encryptionsecret"):
+                d_arguments_result["encryptionsecret"] = s_currentValue
             elif s_currentArgument in ("-t", "--text"):
                 d_arguments_result["text"] = s_currentValue
+            elif: s_currentArgument in ("-s", "secret"):
+                d_arguments_result["secret"] = s_currentValue
 
         # Check required arguments
-        if "namespace" in d_arguments_result and "method" in d_arguments_result and "secret" in d_arguments_result:
+        if "namespace" in d_arguments_result and "method" in d_arguments_result and "encryptionsecret" in d_arguments_result:
             return d_arguments_result
         else:
-            print("Error: Missing required argument. Required arguments: namespace, method, secret")
+            print("Error: Missing required argument. Required arguments: namespace, method, encryptionsecret")
             print_help()
 
     except getopt.error as err:
@@ -88,42 +91,23 @@ def get_latest_cryption_secret(s_namespace, s_secret):
 
     o_latest_cryption_secret = l_secrets_with_substring[0]
 
-    o_private_key = crypto_serialization.load_pem_private_key(
-        data=base64.b64decode((o_latest_cryption_secret.data)["private_key"]),
-        password=None,
-        backend=crypto_default_backend()
-    )
+    o_fernet_key = Fernet(base64.b64decode((o_latest_cryption_secret.data)["fernet_key"]))
 
-    o_public_key = crypto_serialization.load_ssh_public_key(
-        data=base64.b64decode((o_latest_cryption_secret.data)["public_key"]),
-        backend=crypto_default_backend()
-    )
+    return (o_latest_cryption_secret, o_fernet_key)
 
-    return (o_latest_cryption_secret, o_private_key, o_public_key)
+def encrypt_text(o_fernet_key, s_text):
+    by_encrypted_text = o_fernet_key.encrypt(s_text.encode())
+    return by_encrypted_text.decode()
 
-def encrypt(o_public_key, s_text):
-    s_encrypted_text = o_public_key.encrypt(
-        s_text.encode(),
-        padding.OAEP(
-            mgf=padding.MGF1(algorithm=hashes.SHA256()),
-            algorithm=hashes.SHA256(),
-            label=None
-        )
-    )
+def decrypt_text(o_fernet_key, s_text):
+    by_decrypted_text = o_fernet_key.decrypt(s_text.encode())
+    return by_decrypted_text.decode()
 
-    return s_encrypted_text.decode(errors='replace')
+def encrypt_secrets(o_fernet_key, l_secrets_to_encrypt):
+    pass
 
-def decrypt(o_private_key, s_text):
-    s_decrypted_text = private_key.decrypt(
-        s_text,
-        padding.OAEP(
-            mgf=padding.MGF1(algorithm=hashes.SHA256()),
-            algorithm=hashes.SHA256(),
-            label=None
-        )
-    )
-
-    return s_decrypted_text
+def decrypt_secure_secrets(o_fernet_key, l_secrets_to_decrypt):
+    pass
 
 
 def main():
@@ -131,15 +115,36 @@ def main():
     print(f"Arguments: {d_arguments}")
     init_k8s_client()
 
-    cryption_secret, o_private_key, o_public_key = get_latest_cryption_secret(d_arguments["namespace"], d_arguments["secret"])
+    cryption_secret, o_fernet_key = get_latest_cryption_secret(d_arguments["namespace"], d_arguments["encryptionsecret"])
     # print(f"cryption_secret: {cryption_secret}")
 
     if "text" in d_arguments:
-        s_encrypted_text = encrypt(o_public_key, d_arguments["text"])
-        # decrypt(o_private_key, text)
-        print(f"Encrypted text: {s_encrypted_text}")
+        # Encrypt the provided text
+        if d_arguments["method"] == "encrypt":
+            s_encrypted_text = encrypt_text(o_fernet_key, d_arguments["text"])
+            print(f"Encrypted value: {s_encrypted_text}")
+        elif d_arguments["method"] == "decrypt":
+            s_decrypted_text = decrypt_text(o_fernet_key, d_arguments["text"])
+            print(f"Decrypted value: {s_decrypted_text}")
+    elif "secret" in d_arguments:
+        # Encrypt the provided secret
+        if d_arguments["method"] == "encrypt":
+            l_secrets_to_encrypt = list(filter(lambda x: d_arguments["secret"] in x.metadata.name, L_SECRETS_IN_NAMESPACE))
+            encrypt_secrets(o_fernet_key, l_secrets_to_encrypt)
+        elif d_arguments["method"] == "decrypt":
+            print("To be implemented!")
+            pass
+    else:
+        # Encrypt all secrets in the given namespace
+        if d_arguments["method"] == "encrypt":
+            encrypt_secrets(L_SECRETS_IN_NAMESPACE)
+        elif d_arguments["method"] == "decrypt":
+            print("To be implemented!")
+            pass
 
 
 main()
 
-# python3 kubectl-ssutils.py -n jenkins -s ssh-key -m encrypt -t "Hello world!"
+# Commands for testing:
+# python3 kubectl-ssutils.py -n jenkins -s fernet-key -m encrypt -t "Hello world!"
+# python3 kubectl-ssutils.py -n jenkins -s fernet-key -m decrypt -t "gAAAAABh0X5wMhFbxi6aSmIjR_ftPPMYGTOnfJkxF2Acytpw_8dBF81Ddk6kRB6xSFnfSfnzDRQpVpALRFhbyS3h5q9_bH4J3w=="
