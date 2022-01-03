@@ -9,7 +9,8 @@
 
 from cryptography.fernet import Fernet
 from kubernetes import client, config
-import getopt, sys, base64
+import getopt, sys, base64, os, subprocess
+import yaml
 
 
 def print_help():
@@ -103,14 +104,49 @@ def decrypt_text(o_fernet_key, s_text):
     by_decrypted_text = o_fernet_key.decrypt(s_text.encode())
     return by_decrypted_text.decode()
 
-def encrypt_secrets(o_fernet_key, l_secrets_to_encrypt):
+def cleanup_file(s_filepath):
+    if os.path.exists(s_filepath):
+        os.remove(s_filepath)
+
+def encrypt_secrets(o_cryption_secret, o_fernet_key, l_secrets_to_encrypt):
     # print(f"Secrets to encrypt: {l_secrets_to_encrypt}")
+    o_secure_secret = []
     for secret in l_secrets_to_encrypt:
+        with open('securesecret-template.yaml', 'r') as ss_tempate_stream:
+            try:
+                o_secure_secret.append(yaml.safe_load(ss_tempate_stream))
+            except yaml.YAMLError as exc:
+                exit("Something wrong with reading securesecret-template.yaml. Please mail the administrator on redhu.sunny1994@gmail.com immediately: {exc}")
+
+        o_secure_secret[-1]['metadata']['name'] = secret.metadata.name
+        o_secure_secret[-1]['metadata']['namespace'] = secret.metadata.namespace
+        o_secure_secret[-1]['spec']['secretType'] = secret.type
+        o_secure_secret[-1]['spec']['decryptionKeyName'] = o_cryption_secret.metadata.name
+
         for key, value in secret.data.items():
-            print(f"key: {key}")
             s_encrypted_text = encrypt_text(o_fernet_key, base64.b64decode(value).decode())
             s_encrypted_text_b64_encoded = base64.b64encode(s_encrypted_text.encode()).decode()
-            print(f"encrypted_value b64 encoded: {s_encrypted_text_b64_encoded}")
+            s_decrypted_text = decrypt_text(o_fernet_key, base64.b64decode(s_encrypted_text_b64_encoded).decode())
+            s_decrypted_text_b64_encoded = base64.b64encode(s_decrypted_text.encode()).decode()
+
+            if s_decrypted_text_b64_encoded == value:
+                o_secure_secret[-1]['spec']['data'].append({"key": key, "value": s_encrypted_text_b64_encoded})
+            else:
+                print(f"Original value: {value}")
+                print(f"Decrypted value: {s_decrypted_text_b64_encoded}")
+                exit("Something wrong with encryption! Please mail the administrator on redhu.sunny1994@gmail.com immediately.")
+
+    s_temp_output_filename = 'secure_secrets.yaml'
+    cleanup_file(s_temp_output_filename)
+
+    with open(s_temp_output_filename, 'w') as file:
+        try:
+            yaml.dump_all(o_secure_secret, file, default_flow_style=False)
+        except yaml.YAMLError as exc:
+            print(exc)
+    print()     # Empty line
+    subprocess.run(f"cat {s_temp_output_filename}", shell=True, check=True)
+    cleanup_file(s_temp_output_filename)
 
 def decrypt_secure_secrets(o_fernet_key, l_secrets_to_decrypt):
     pass
@@ -121,7 +157,7 @@ def main():
     print(f"Arguments: {d_arguments}")
     init_k8s_client()
 
-    cryption_secret, o_fernet_key = get_latest_cryption_secret(d_arguments["namespace"], d_arguments["encryptionsecret"])
+    o_cryption_secret, o_fernet_key = get_latest_cryption_secret(d_arguments["namespace"], d_arguments["encryptionsecret"])
     # print(f"cryption_secret: {cryption_secret}")
 
     if "text" in d_arguments:
@@ -136,14 +172,14 @@ def main():
         # Encrypt the provided secret
         if d_arguments["method"] == "encrypt":
             l_secrets_to_encrypt = list(filter(lambda x: d_arguments["secret"] in x.metadata.name, L_SECRETS_IN_NAMESPACE))
-            encrypt_secrets(o_fernet_key, l_secrets_to_encrypt)
+            encrypt_secrets(o_cryption_secret, o_fernet_key, l_secrets_to_encrypt)
         elif d_arguments["method"] == "decrypt":
             print("To be implemented!")
             pass
     else:
         # Encrypt all secrets in the given namespace
         if d_arguments["method"] == "encrypt":
-            encrypt_secrets(o_fernet_key, L_SECRETS_IN_NAMESPACE)
+            encrypt_secrets(o_cryption_secret, o_fernet_key, L_SECRETS_IN_NAMESPACE)
         elif d_arguments["method"] == "decrypt":
             print("To be implemented!")
             pass
@@ -154,4 +190,5 @@ main()
 # Commands for testing:
 # python3 kubectl-ssutils.py -n jenkins -e fernet-key -m encrypt -t "Hello world!"
 # python3 kubectl-ssutils.py -n jenkins -e fernet-key -m decrypt -t "gAAAAABh0X5wMhFbxi6aSmIjR_ftPPMYGTOnfJkxF2Acytpw_8dBF81Ddk6kRB6xSFnfSfnzDRQpVpALRFhbyS3h5q9_bH4J3w=="
+# python3 kubectl-ssutils.py -n jenkins -e fernet-key -m encrypt -s default
 # python3 kubectl-ssutils.py -n jenkins -e fernet-key -m encrypt
