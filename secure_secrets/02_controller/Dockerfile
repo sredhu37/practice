@@ -1,8 +1,5 @@
 FROM alpine:3.15.0
 
-# Install gpg
-RUN apk add --update gnupg
-
 # Install python and pip
 ENV PYTHONUNBUFFERED=1
 RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python

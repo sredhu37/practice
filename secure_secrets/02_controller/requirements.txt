@@ -1,4 +1,4 @@
 kopf
 kubernetes
-rsa
 cryptography
+pyyaml
