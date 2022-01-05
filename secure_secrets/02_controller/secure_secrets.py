@@ -14,7 +14,7 @@ import kopf
 import subprocess
 import base64
 from cryptography.fernet import Fernet
-import kubectl-ssutils as ssutils
+import ssutils
 
 config.load_incluster_config()
 k8s_api = client.CoreV1Api()
