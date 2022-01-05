@@ -52,24 +52,24 @@ class Secret:
         k8s_api.create_namespaced_secret(namespace=self.namespace, body=sec)
 
 
-# @kopf.on.create("securesecrets")
-# def create_secret(spec, body, **kwargs):
-#     secret = Secret(
-#         body["metadata"]["name"],
-#         body["metadata"]["namespace"],
-#         spec["secretType"],
-#         spec["data"],
-#         {
-#             'api': body["apiVersion"],
-#             'kind': body["kind"],
-#             'uid': body["metadata"]["uid"],
-#             'decryption_key_name': spec["decryptionKeyName"]
-#         }
-#     )
+@kopf.on.create("securesecrets")
+def create_secret(spec, body, **kwargs):
+    secret = Secret(
+        body["metadata"]["name"],
+        body["metadata"]["namespace"],
+        spec["secretType"],
+        spec["data"],
+        {
+            'api': body["apiVersion"],
+            'kind': body["kind"],
+            'uid': body["metadata"]["uid"],
+            'decryption_key_name': spec["decryptionKeyName"]
+        }
+    )
 
-#     print(secret)           # Comment this line after testing
+    print(secret)           # Comment this line after testing
 
-#     secret.create()
+    secret.create()
 
 
 @kopf.timer("namespaces", interval=KEY_GENERATION_INTERVAL)
@@ -99,17 +99,6 @@ def create_new_key(spec, body, **kwargs):
             create_key_and_secret(now, namespace)
 
 
-# @kopf.timer("secrets", interval=300, initial_delay=10, field='type', value='Opaque')      # Every 5 minutes
-# def encrypt_all_secrets(spec, body, **kwargs):
-#     name = body.metadata.name
-#     namespace = body.metadata.namespace
-#     data = body['data']
-
-#     keys_list = list_keys()
-#     for key, value in data.items():
-#         encrypt(value, keys_list)
-
-
 def list_keys(namespace):
     keys_result = k8s_api.list_namespaced_secret(namespace).items
     encryption_keys = list(filter(lambda k: k.metadata.name.startswith(f"{namespace}-{KEY_TYPE}-"), keys_result))
@@ -117,12 +106,6 @@ def list_keys(namespace):
     # print(f"Sorted keys: {sorted_keys}")
     return sorted_keys
 
-
-def encrypt(text, keys_list):
-    latest_key_name = keys_list[-1]
-
-# def decrypt(text, keys_list):
-#     pass
 
 def create_key_and_secret(now, namespace):
     now_hyphen_str = now.strftime('%Y-%m-%d-%H-%M-%S')
