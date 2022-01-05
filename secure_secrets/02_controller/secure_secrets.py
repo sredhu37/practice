@@ -1,3 +1,12 @@
+#############################################
+# Variables naming convention               #
+# o     => object                           #
+# s     => string                           #
+# by    => bytes                            #
+# l     => list                             #
+# d     => dictionary                       #
+#############################################
+
 from kubernetes import client, config
 from datetime import datetime
 import os

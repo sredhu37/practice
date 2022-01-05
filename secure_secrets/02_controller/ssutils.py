@@ -1,3 +1,12 @@
+#############################################
+# Variables naming convention               #
+# o     => object                           #
+# s     => string                           #
+# by    => bytes                            #
+# l     => list                             #
+# d     => dictionary                       #
+#############################################
+
 from cryptography.fernet import Fernet
 import yaml, base64, os, subprocess
 
