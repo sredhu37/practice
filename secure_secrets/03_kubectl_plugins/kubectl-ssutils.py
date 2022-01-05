@@ -92,8 +92,10 @@ def get_latest_cryption_secret(s_namespace, s_secret):
 
     o_latest_cryption_secret = l_secrets_with_substring[0]
 
-    o_fernet_key = Fernet(base64.b64decode((o_latest_cryption_secret.data)["fernet_key"]))
-
+    try:
+        o_fernet_key = Fernet(base64.b64decode((o_latest_cryption_secret.data)["fernet_key"]))
+    except KeyError as exc:
+        exit(f"Invalid key! Please choose a Fernet key. KeyError: {exc}")
     return (o_latest_cryption_secret, o_fernet_key)
 
 def encrypt_text(o_fernet_key, s_text):
@@ -164,7 +166,7 @@ def main():
         # Encrypt the provided text
         if d_arguments["method"] == "encrypt":
             s_encrypted_text = encrypt_text(o_fernet_key, d_arguments["text"])
-            print(f"Encrypted value: {s_encrypted_text}")
+            print(f"Encrypted with key: {o_cryption_secret.metadata.name}; Encrypted value: {s_encrypted_text}")
         elif d_arguments["method"] == "decrypt":
             s_decrypted_text = decrypt_text(o_fernet_key, d_arguments["text"])
             print(f"Decrypted value: {s_decrypted_text}")
