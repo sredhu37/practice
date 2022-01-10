@@ -62,19 +62,19 @@ kubectl apply -f manual_setup/01_namespaces.yaml
 ### 2.4.2. Create Secure Secret K8S operator
 
 ```
-kubectl apply -f manual_setup/02_secure-secret-k8s-operator.yaml
+kubectl apply -f https://raw.githubusercontent.com/sredhu37/secure-secrets/master/operator/secure_secret_k8s_operator.yaml
 ```
 
 ### 2.4.2. Install argocd
 
 ```
-kubectl apply -n argocd -f manual_setup/03_argocd-controller.yaml
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
 ### 2.4.3. Install app-of-apps
 
 ```
-kubectl apply -f manual_setup/04_argocd-app.yaml
+kubectl apply -f manual_setup/02_argocd-app.yaml
 ```
 
 ### 2.4.4. Access argocd:
@@ -158,12 +158,3 @@ helm ls -n jenkins
 
 
 io.jenkins.plugins.casc.ConfiguratorException: Invalid configuration: '/var/jenkins_home/casc_config/casc.yaml' isn't a valid path.
-
-## SecureSecrets
-
-### Pre-requisites
-
-* Install `openssl` cli.
-*
-
-### Create a SSH key

@@ -12,8 +12,8 @@ jenkins:
       allowsSignup: true
       enableCaptcha: false
       users:
-      - id: ${ADMIN_USER}
-        name: ${ADMIN_USER}
-        password: ${ADMIN_PASSWORD}
+      - id: admin
+        name: admin
+        password: admin
   remotingSecurity:
     enabled: true
