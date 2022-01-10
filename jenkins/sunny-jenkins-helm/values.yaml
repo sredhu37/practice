@@ -11,7 +11,7 @@ jenkins:
     tag: "2.309-alpine-0.0.1"
 
 service:
-  type: ClusterIP         # ClusterIP, NodePort, LoadBalancer, ExternalName
+  type: LoadBalancer          # ClusterIP, NodePort, LoadBalancer, ExternalName
   ports:
     master: 8080
     agent: 50000
@@ -53,8 +53,7 @@ autoscaling:
 
 persitentVolumeClaim:
   storage: 5G
-  # storageClassName: hostpath          # Docker desktop k8s cluster
-  storageClassName: standard-rwo    # GKE cluster
+  storageClassName: standard    # GKE cluster
 
 sealedSecrets:
   jcasc:
