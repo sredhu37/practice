@@ -138,12 +138,6 @@ Jenkins.instance.pluginManager.plugins.each{
 
 ## Install Helm chart (From Local machine)
 
-### Dev version (On Docker Desktop K8S)
-
-```
-helm install -f jenkins/sunny-jenkins-helm/values-dev.yaml -n jenkins jenkins jenkins/sunny-jenkins-helm/.
-```
-
 ### Prod version (On GKE)
 
 ```

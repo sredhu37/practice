@@ -20,7 +20,7 @@ spec:
     targetRevision: master
     helm:
       valueFiles:
-      - values-dev.yaml
+      - values.yaml
       values: |
         persitentVolumeClaim:
           storage: 10G
