@@ -24,3 +24,23 @@ spec:
       values: |
         persitentVolumeClaim:
           storage: 10G
+        casc: |
+          unclassified:
+            location:
+              url: "http://127.0.0.1:8080/"
+          jenkins:
+            authorizationStrategy:
+              projectMatrix:
+                permissions:
+                - "Overall/Administer:admin"
+                - "Overall/Read:authenticated"
+            securityRealm:
+              local:
+                allowsSignup: true
+                enableCaptcha: false
+                users:
+                - id: ubuntu
+                  name: ubuntu
+                  password: ubuntu
+            remotingSecurity:
+              enabled: true

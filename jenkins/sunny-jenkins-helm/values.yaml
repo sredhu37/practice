@@ -55,7 +55,7 @@ persitentVolumeClaim:
   storage: 5G
   storageClassName: standard    # GKE cluster
 
-sealedSecrets:
+securesecrets:
   jcasc:
     data:
       admin_username: ''

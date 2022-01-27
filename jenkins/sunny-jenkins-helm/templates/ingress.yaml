@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-master
+spec:
+  rules:
+  - host: {{ .Release.Name }}.sunnyredhu.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-master
+            port:
+              number: {{ .Values.service.ports.master }}

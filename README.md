@@ -56,7 +56,7 @@ Make sure that you are seeing your cluster in the output from the last command.
 ### 2.4.1. Create namespaces:
 
 ```
-kubectl apply -f manual_setup/01_namespaces.yaml
+kubectl apply -f https://raw.githubusercontent.com/sredhu37/practice/master/manual_setup/01_namespaces.yaml
 ```
 
 ### 2.4.2. Create Secure Secret K8S operator
@@ -69,12 +69,14 @@ kubectl apply -f https://raw.githubusercontent.com/sredhu37/secure-secrets/maste
 
 ```
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
 ```
 
 ### 2.4.3. Install app-of-apps
 
 ```
-kubectl apply -f manual_setup/02_argocd-app.yaml
+kubectl apply -f https://raw.githubusercontent.com/sredhu37/practice/master/manual_setup/02_argocd-app.yaml
 ```
 
 ### 2.4.4. Access argocd:
