@@ -15,7 +15,7 @@ spec:
       prune: true
       selfHeal: true
   source:
-    path: jenkins/sunny-jenkins-helm/
+    path: jenkins/jenkins-helm/
     repoURL: 'https://github.com/sredhu37/practice.git'
     targetRevision: master
     helm:

@@ -5,8 +5,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   rules:
-  - host: {{ .Release.Name }}.sunnyredhu.com
-    http:
+  - http:
       paths:
       - path: /
         pathType: Prefix
@@ -15,3 +14,4 @@ spec:
             name: {{ .Release.Name }}-master
             port:
               number: {{ .Values.service.ports.master }}
+    # host: {{ .Release.Name }}.sunnyredhu.com
