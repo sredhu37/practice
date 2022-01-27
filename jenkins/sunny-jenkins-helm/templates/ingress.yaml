@@ -2,6 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Release.Name }}-master
+  namespace: {{ .Release.Namespace }}
 spec:
   rules:
   - host: {{ .Release.Name }}.sunnyredhu.com
