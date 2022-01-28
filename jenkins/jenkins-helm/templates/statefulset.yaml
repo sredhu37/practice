@@ -29,9 +29,9 @@ spec:
         image: {{ .Values.jenkins.image.repository }}:{{ .Values.jenkins.image.tag }}
         imagePullPolicy: {{ .Values.jenkins.image.pullPolicy }}
         ports:
-        - containerPort: 8080
+        - containerPort: {{ .Values.service.ports.master }}
           name: master
-        - containerPort: 50000
+        - containerPort: {{ .Values.service.ports.agent }}
           name: agent
         env:
           - name: JAVA_OPTS
@@ -43,6 +43,18 @@ spec:
           mountPath: /var/jenkins_home
         - name: {{ .Release.Name }}-casc
           mountPath: /var/jenkins_home/config_casc
+        livenessProbe:
+          httpGet:
+            path: /login
+            port: {{ .Values.service.ports.master }}
+          initialDelaySeconds: 300
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /login
+            port: {{ .Values.service.ports.master }}
+          initialDelaySeconds: 300
+          timeoutSeconds: 5
       volumes:
       - name: {{ .Release.Name }}-home
         persistentVolumeClaim:

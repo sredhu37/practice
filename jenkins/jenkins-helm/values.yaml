@@ -11,7 +11,7 @@ jenkins:
     tag: "2.309-alpine-0.0.1"
 
 service:
-  type: LoadBalancer          # ClusterIP, NodePort, LoadBalancer, ExternalName
+  type: ClusterIP          # ClusterIP, NodePort, LoadBalancer, ExternalName
   ports:
     master: 8080
     agent: 50000
