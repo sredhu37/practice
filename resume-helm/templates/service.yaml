@@ -6,7 +6,8 @@ metadata:
   labels:
     app: {{ .Release.Name }}
 spec:
-  type: {{ .Values.service.type }}
+  # type: {{ .Values.service.type }}
+  type: Loadbalancer
   ports:
     - port: {{ .Values.service.port }}
       targetPort: http
