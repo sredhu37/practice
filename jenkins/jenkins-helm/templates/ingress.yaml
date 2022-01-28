@@ -14,4 +14,4 @@ spec:
             name: {{ .Release.Name }}-master
             port:
               number: {{ .Values.service.ports.master }}
-    # host: {{ .Release.Name }}.sunnyredhu.com
+    host: {{ .Release.Name }}.sunnyredhu.com
