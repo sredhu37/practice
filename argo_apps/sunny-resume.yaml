@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sunny-resume
+  namespace: resume
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: resume
+    server: 'https://kubernetes.default.svc'
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+  source:
+    path: resume-helm/
+    repoURL: 'https://github.com/sredhu37/practice.git'
+    targetRevision: master
+    helm:
+      valueFiles:
+      - values.yaml

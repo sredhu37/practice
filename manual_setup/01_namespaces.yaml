@@ -10,9 +10,9 @@ metadata:
 kind: Namespace
 apiVersion: v1
 metadata:
-  name: sealedsecrets
+  name: securesecrets
   labels:
-    name: sealedsecrets
+    name: securesecrets
 
 ---
 kind: Namespace
@@ -21,3 +21,11 @@ metadata:
   name: argocd
   labels:
     name: argocd
+
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: resume
+  labels:
+    name: resume
