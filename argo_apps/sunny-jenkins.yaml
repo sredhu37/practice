@@ -39,8 +39,8 @@ spec:
                 allowsSignup: true
                 enableCaptcha: false
                 users:
-                - id: ubuntu
-                  name: ubuntu
-                  password: ubuntu
+                - id: admin
+                  name: admin
+                  password: admin
             remotingSecurity:
               enabled: true
