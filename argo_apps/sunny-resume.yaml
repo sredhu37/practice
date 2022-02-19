@@ -21,3 +21,7 @@ spec:
     helm:
       valueFiles:
       - values.yaml
+      values: |
+        image:
+          repository: sunnyredhu/sunnyredhu-resume
+          tag: "0.0.2"
