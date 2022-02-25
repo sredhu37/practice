@@ -6,66 +6,23 @@ Nothing yet!!!
 
 ## 2.1. Pre-requisites
 
-### Production env
+Follow the steps mentioned in https://github.com/sredhu37/do-terraform-gcp/blob/main/README.md
 
-* 2.1.1. [Create GCP account](https://console.cloud.google.com). (You will get 300 USD or ~ 22000 INR initially as free tier for the first 3 months.)
-* 2.1.2. [Install gcloud CLI](https://cloud.google.com/sdk/docs/install) on dev-machine.
-* 2.1.3. Create `project` in GCP account.
-* 2.1.4. Create `service account` in the same project.
-* 2.1.5. Configure gcloud using `gcloud init`.
-* 2.1.6. Create `service account` in GCP and get the associated `key`.
-* 2.1.7. Put the service account `json key` in `k8s_cluster_setup/terraform_backend` and `k8s_cluster_setup/gke` folders. Name the file as `secret_tf_gcp_sa_key.json`.
-* 2.1.8. [Install Terraform CLI](https://learn.hashicorp.com/tutorials/terraform/install-cli) on dev-machine.
-* 2.1.9. [Install kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/) on dev-machine.
-* 2.1.10. Download `argocd CLI` and move to path.
+## 2.2. Setup
 
-
-## 2.2. Create Terraform Backend
-
-<b>NOTE:</b> Execute this locally on your dev-machine and do not push the `terraform.tfstate*` files to any VCS/SCM, but keep them safe on the dev-machine.
-
-```
-terraform -chdir="k8s_cluster_setup/terraform_backend" fmt
-terraform -chdir="k8s_cluster_setup/terraform_backend" init
-terraform -chdir="k8s_cluster_setup/terraform_backend" validate
-terraform -chdir="k8s_cluster_setup/terraform_backend" plan
-terraform -chdir="k8s_cluster_setup/terraform_backend" apply -auto-approve
-```
-
-## 2.3. Create GKE cluster
-
-```
-gcloud auth application-default login
-
-terraform -chdir="k8s_cluster_setup/gke" fmt
-terraform -chdir="k8s_cluster_setup/gke" init
-terraform -chdir="k8s_cluster_setup/gke" validate
-terraform -chdir="k8s_cluster_setup/gke" plan
-terraform -chdir="k8s_cluster_setup/gke" apply -auto-approve
-```
-Once the GKE cluster is created:
-```
-gcloud container clusters get-credentials sunny-gcp1-gke-cluster-1 --region asia-south1-a --project sunny-gcp1-practice
-
-kubectl config get-contexts
-```
-Make sure that you are seeing your cluster in the output from the last command.
-
-## 2.4. Setup
-
-### 2.4.1. Create namespaces:
+### 2.2.1. Create namespaces:
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/sredhu37/practice/master/manual_setup/01_namespaces.yaml
 ```
 
-### 2.4.2. Create Secure Secret K8S operator
+### 2.2.2. Create Secure Secret K8S operator
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/sredhu37/secure-secrets/master/operator/secure_secret_k8s_operator.yaml
 ```
 
-### 2.4.2. Install argocd
+### 2.2.3. Install argocd
 
 ```
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
@@ -73,13 +30,13 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
 ```
 
-### 2.4.3. Install app-of-apps
+### 2.2.4. Install app-of-apps
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/sredhu37/practice/master/manual_setup/02_argocd-app.yaml
 ```
 
-### 2.4.4. Access argocd:
+### 2.2.5. Access argocd:
 
 ```
 kubectl get svc -n argocd argocd-server -o "jsonpath={.status.loadBalancer.ingress[*].ip}"
@@ -87,26 +44,16 @@ kubectl get svc -n argocd argocd-server -o "jsonpath={.status.loadBalancer.ingre
 
 Now access argocd UI using the value from previous command.
 
-### 2.4.5. Getting credentials
+### 2.2.6. Getting credentials
 
 Username: `admin`
 
 Password: `kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d`
 
-### 2.4.6. Deploy ingress controller:
+### 2.4.7. Deploy ingress controller:
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/cloud/deploy.yaml
-```
-
-### 2.4.7. Destroy infrastructure
-
-Once you are done with experimenting with the project, feel free to destroy the infra in order to avoid additional cost.
-
-```
-terraform -chdir="k8s_cluster_setup/gke" destroy -auto-approve
-
-terraform -chdir="k8s_cluster_setup/terraform_backend" destroy -auto-approve
 ```
 
 ## TESTING JENKINS IMAGE
