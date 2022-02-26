@@ -16,11 +16,13 @@ Follow the steps mentioned in https://github.com/sredhu37/do-terraform-gcp/blob/
 kubectl apply -f https://raw.githubusercontent.com/sredhu37/practice/master/manual_setup/01_namespaces.yaml
 ```
 
-### 2.2.2. Create Secure Secret K8S operator
+### 2.2.2. Install SealedSecrets
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/sredhu37/secure-secrets/master/operator/secure_secret_k8s_operator.yaml
+kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.17.3/controller.yaml
 ```
+
+Download and install `kubeseal` [from here](https://github.com/bitnami-labs/sealed-secrets/releases/tag/v0.17.3).
 
 ### 2.2.3. Install argocd
 
