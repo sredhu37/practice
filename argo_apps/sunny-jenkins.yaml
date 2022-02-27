@@ -32,16 +32,11 @@ spec:
             authorizationStrategy:
               projectMatrix:
                 permissions:
-                - "Overall/Administer:admin"
                 - "Overall/Administer:sunnyredhu"
                 - "Overall/Read:authenticated"
             securityRealm:
               local:
                 allowsSignup: true
                 enableCaptcha: false
-                users:
-                - id: admin
-                  name: admin
-                  password: admin
             remotingSecurity:
               enabled: true
