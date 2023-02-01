@@ -6,7 +6,19 @@ Nothing yet!!!
 
 ## 2.1. Pre-requisites
 
+### 2.1.1. Infra Setup
+
 Follow the steps mentioned in https://github.com/sredhu37/do-terraform-gcp/blob/main/README.md
+
+### 2.1.2. Setup connection to GKE cluster
+
+- ssh into `bastion` machine created in the previous step.
+- `gcloud init` and follow the instructions.
+- `gcloud auth init` and follow the instructions.
+- Install kubectl: `sudo apt-get install kubectl`
+- Install gke-gcloud-auth-plugin: `sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin`
+- Connect to GKE cluster: `gcloud container clusters get-credentials gke-private-cluster-europe-west4 --zone europe-west4-a --project sunny-tf-gcp-5`
+
 
 ## 2.2. Setup
 
@@ -52,11 +64,9 @@ Username: `admin`
 
 Password: `kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d`
 
-### 2.4.7. Deploy ingress controller:
 
-```
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.41.2/deploy/static/provider/cloud/deploy.yaml
-```
+It will take some time for app-of-apps to create other errors. There might be some error displayed. Just wait for 5-10 minutes, it will work automatically.
+
 
 ## TESTING JENKINS IMAGE
 
