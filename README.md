@@ -67,6 +67,14 @@ Password: `kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath=
 
 It will take some time for app-of-apps to create other errors. There might be some error displayed. Just wait for 5-10 minutes, it will work automatically.
 
+### 2.2.7. Setup Ingress
+
+- Create Cloud DNS zone and get nameservers from it.
+- Add/Update the custom name servers in Google Domains.
+- Ingress object creates the external HTTP(S) LB in GCP. Check the ingress object in argocd ui and get the IP address.
+- Add a record set in the DNS zone with proper prefix and proper IP address.
+- Wait for 10 minutes and try the url in the browser: `http://argocd.sunnyredhu.com`. Don't forget the http.
+- Repeat the above steps for resume too: `http://sunnyredhu.com`. Don't forget the http.
 
 ## TESTING JENKINS IMAGE
 
