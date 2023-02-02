@@ -5,6 +5,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app: {{ .Release.Name }}
+  annotations:
+    - cloud.google.com/l4-rbs: "enabled"
 spec:
   type: {{ .Values.service.type }}
   ports:
