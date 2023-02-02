@@ -24,4 +24,4 @@ spec:
       values: |
         image:
           repository: sunnyredhu/sunnyredhu-resume
-          tag: "0.0.3"
+          tag: "0.0.4"
